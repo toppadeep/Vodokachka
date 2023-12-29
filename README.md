@@ -2,8 +2,9 @@
 
 ________CLIENT______
 VUE 3 - OPTION \ JAVASCRIPT
-node.js
-PRIMEVUE - styles
+node.js v16.17.1
+npm 8.19.3
+PRIMEVUE 3.45.0
 
 FOR RUN APP:
 DEVELOPMENT - npm run dev
