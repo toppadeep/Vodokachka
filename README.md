@@ -41,11 +41,6 @@ DB_PASSWORD=
 ```
 php artisan migrate or export DB
 ```
-
-### Compiles and minifies for production
-```
-php artisan migrate or export DB
-```
 2. Start APP - php artisan serve
 ### Run server
 ```
