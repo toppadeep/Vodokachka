@@ -1,4 +1,6 @@
 ﻿# Vodokachka
+
+ ### CLIENT
 ```
 VUE 3 - OPTION \ JAVASCRIPT
 node.js v16.17.1
@@ -21,10 +23,12 @@ npm run build
 ```
 npm run lint
 ```
-```
+
+### SERVER
 Laravel 10x - PHP 8.1 
 API - 127.0.0.1/api/..
 
+```
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
 DB_PORT=3306
