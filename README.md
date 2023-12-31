@@ -1,6 +1,5 @@
 ﻿# Vodokachka
 ```
-________CLIENT______
 VUE 3 - OPTION \ JAVASCRIPT
 node.js v16.17.1
 npm 8.19.3
@@ -23,7 +22,6 @@ npm run build
 npm run lint
 ```
 ```
-________SERVER______
 Laravel 10x - PHP 8.1 
 API - 127.0.0.1/api/..
 
