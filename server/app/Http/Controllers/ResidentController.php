@@ -97,9 +97,8 @@ class ResidentController extends Controller
         $resident = Resident::find($id);
         
         if ($resident) {
-            $resident->destroy();
-            $resident->save();
-
+            $resident->delete();
+    
             return response()->json([
                 'status' => 'success',
                 'response' => 'Дачник удалён'

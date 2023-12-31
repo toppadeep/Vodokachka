@@ -39,9 +39,6 @@ export default {
         };
     },
     computed: {
-        periodConfirm: function () {
-            return this.periodDetected();
-        },
         totalArea: function () {
             return this.residents.reduce((sum, resident) => sum + resident.area, 0);
         },
@@ -185,6 +182,14 @@ export default {
                     + totalArea / 100 * resident.area + ' %' }}
                 </option>
             </select> -->
+            <Divider align="center" type="solid" v-if="resident.start_date">
+                <b>Дата подключения дачника - {{ resident.start_date }}</b>
+            </Divider>
+            <Divider align="center" type="solid" v-if="resident.timeToConnected">
+                <b>Прошло - {{ resident.timeToConnected }} подключения</b>
+            </Divider>
+            
+
             <label for="period_id">Период</label>
             <Dropdown v-model="period" inputId="period_id" placeholder="Выберите период" :options="periods"
                 optionLabel="month" />

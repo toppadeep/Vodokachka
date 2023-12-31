@@ -8,12 +8,14 @@ import Skeleton from 'primevue/skeleton';
 import InputText from 'primevue/inputtext';
 import InputNumber from 'primevue/inputnumber';
 import Toast from 'primevue/toast';
+import Dialog from 'primevue/dialog';
 
 export default {
   data() {
     return {
       loading: true,
-      deleteProductDialog: true,
+      deleteResidentDialog: false,
+      residentSelected: {},
       resident: {
         id: 'NEW',
         fio: '',
@@ -38,7 +40,8 @@ export default {
     Skeleton,
     InputText,
     InputNumber,
-    Toast
+    Toast,
+    Dialog,
   },
   methods: {
     async getResidents() {
@@ -72,27 +75,48 @@ export default {
       } else {
         this.$toast.add({ severity: 'warning', detail: 'Дачник не добавлен', life: 3000 });
       }
-    }
-  },
-  async createResidend() {
-    const resident = new FormData()
-    resident.append('fio', this.resident.fio)
-    resident.append('area', this.resident.area)
-    resident.append('start_date', this.resident.start_date)
+    },
+    async createResidend() {
+      const resident = new FormData()
+      resident.append('fio', this.resident.fio)
+      resident.append('area', this.resident.area)
+      resident.append('start_date', this.resident.start_date)
 
-    const response = await fetch('http://127.0.0.1:8000/api/resident', {
-      method: 'POST',
-      body: resident
-    })
+      const response = await fetch('http://127.0.0.1:8000/api/resident', {
+        method: 'POST',
+        body: resident
+      })
 
-    const request = await response.json()
+      const request = await response.json()
 
-    if (request.status == 'success') {
-      this.residents.push(this.resident);
-      this.visible = !this.visible;
-      this.$toast.add({ severity: 'success', summary: 'Успешно', detail: request.response, life: 3000 });
-    } else {
-      this.$toast.add({ severity: 'warning', detail: 'Дачник не добавлен', life: 3000 });
+      if (request.status == 'success') {
+        this.residents.push(this.resident);
+        this.visible = !this.visible;
+        this.$toast.add({ severity: 'success', summary: 'Успешно', detail: request.response, life: 3000 });
+      } else {
+        this.$toast.add({ severity: 'warning', detail: 'Дачник не добавлен', life: 3000 });
+      }
+    },
+    confirmDeleteResident(resident) {
+      this.residentSelected = resident;
+      this.deleteResidentDialog = true;
+    },
+    async deleteResident(id) {
+
+      const response = await fetch((`http://127.0.0.1:8000/api/resident/${id}`), {
+        method: 'DELETE',
+      });
+
+      this.deleteResidentDialog = false;
+
+      const request = await response.json()
+      if (request.status == 'success') {
+        const index = this.residents.indexOf(id)
+        this.residents.splice(index, 1);
+        this.$toast.add({ severity: 'success', summary: 'Успешно', detail: request.response, life: 3000 });
+      } else {
+        this.$toast.add({ severity: 'error', detail: 'Дачник не удалён', life: 3000 });
+      }
     }
   },
 }
@@ -166,22 +190,22 @@ export default {
           </template>
         </Column>
         <Column :rowEditor="true" style="width: 10%; min-width: 8rem" bodyStyle="text-align:center"></Column>
-        <Column  style="min-width:8rem">
-          <template #body>
-            <ButtonComponent label="Удалить" outlined severity="danger"  />
+        <Column :exportable="false" style="min-width:8rem">
+          <template #body="slotProps">
+            <ButtonComponent label="Удалить" outlined severity="danger" @click="confirmDeleteResident(slotProps.data)" />
           </template>
         </Column>
       </DataTable>
     </div>
   </div>
-  <Dialog v-model:visible="deleteProductDialog" :style="{ width: '450px' }" header="Confirm" :modal="true">
+  <Dialog v-model:visible="deleteResidentDialog" :style="{ width: '450px' }" header="Подтверждение" :modal="true">
     <div class="confirmation-content">
       <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
-      <span v-if="product">Are you sure you want to delete <b>{{ resident.fio }}</b>?</span>
+      <span v-if="residentSelected">Вы хотите удалить <b>{{ residentSelected.fio }}</b>?</span>
     </div>
     <template #footer>
-      <ButtonComponent label="No" icon="pi pi-times" text @click="deleteProductDialog = false" />
-      <ButtonComponent label="Yes" icon="pi pi-check" text @click="deleteProduct" />
+      <ButtonComponent label="Нет" icon="pi pi-times" text @click="deleteResidentDialog = false" />
+      <ButtonComponent label="Да" icon="pi pi-check" text @click="deleteResident(residentSelected.id)" />
     </template>
   </Dialog>
   <!-- <table summary="This table shows how to create responsive tables using RWD-Table-Patterns' functionality"
