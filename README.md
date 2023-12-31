@@ -34,9 +34,8 @@ DB_DATABASE=vodokachka
 DB_USERNAME=root
 DB_PASSWORD=
 ```
-```
 FOR RUN 
-1. Make migration - php artisan migrate or export DB
+###1. Make migration - php artisan migrate or export DB
 ### Compiles and minifies for production
 ```
 php artisan migrate or export DB
@@ -82,7 +81,6 @@ DELETE          api/resident/{resident} resident.destroy › ResidentController@
 GET|HEAD        api/user ...........................................................
 
 ```
-GET|HEAD        sanctum/csrf-cookie sanctum.csrf-cookie › Laravel\Sanctum › CsrfCoo… 
 
 
 
