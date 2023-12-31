@@ -76,11 +76,7 @@ class ResidentController extends Controller
                 'status' => 'error', 'response' => "Дачник не найден"
             ], 200);
         }else {
-            $resident->update([
-                'fio' => $request->fio,
-                'area' => $request->area,
-                'start_date' => $request->start_date,
-            ]);
+            $resident->update($request->all());
             return response()->json([
                 'status' => 'success', 'response' => "Данные обновлены"
             ], 200);
@@ -105,7 +101,7 @@ class ResidentController extends Controller
             ]);
         }else {
             return response()->json([
-                'ststus' => 'Not found',
+                'status' => 'Not found',
                 'response' => 'Пользователь не найден'
             ]);
         }

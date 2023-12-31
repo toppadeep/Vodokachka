@@ -85,6 +85,20 @@ class PeriodController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $period = Period::find($id);
+        
+        if ($period) {
+            $period->delete();
+    
+            return response()->json([
+                'status' => 'success',
+                'response' => 'Период удалён'
+            ]);
+        }else {
+            return response()->json([
+                'status' => 'Not found',
+                'response' => 'Невозможно удалить период'
+            ]);
+        }
     }
 }

@@ -8,13 +8,13 @@ import Skeleton from 'primevue/skeleton';
 import InputText from 'primevue/inputtext';
 import InputNumber from 'primevue/inputnumber';
 import Toast from 'primevue/toast';
-import Dialog from 'primevue/dialog';
+import DialogComponent from 'primevue/dialog';
 
 export default {
   data() {
     return {
       loading: true,
-      deleteResidentDialog: false,
+      deleteDialog: false,
       residentSelected: {},
       resident: {
         id: 'NEW',
@@ -41,7 +41,7 @@ export default {
     InputText,
     InputNumber,
     Toast,
-    Dialog,
+    DialogComponent,
   },
   methods: {
     async getResidents() {
@@ -99,7 +99,7 @@ export default {
     },
     confirmDeleteResident(resident) {
       this.residentSelected = resident;
-      this.deleteResidentDialog = true;
+      this.deleteDialog = true;
     },
     async deleteResident(id) {
 
@@ -107,7 +107,7 @@ export default {
         method: 'DELETE',
       });
 
-      this.deleteResidentDialog = false;
+      this.deleteDialog = false;
 
       const request = await response.json()
       if (request.status == 'success') {
@@ -150,7 +150,7 @@ export default {
       <ButtonComponent label="Добавить" @click="visible = !visible" />
     </div>
     <div class="card">
-      <DataTable :value="residents" paginator :rows="5" tableStyle="min-width: 50rem" stripedRows class="p-datatable"
+      <DataTable :value="residents" paginator :rows="4" tableStyle="min-width: 50rem" stripedRows class="p-datatable"
         paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"
         currentPageReportTemplate="{first} to {last} of {totalRecords}" v-model:editingRows="editingRows" editMode="row"
         @row-edit-save="onRowEditSave">
@@ -192,22 +192,22 @@ export default {
         <Column :rowEditor="true" style="width: 10%; min-width: 8rem" bodyStyle="text-align:center"></Column>
         <Column :exportable="false" style="min-width:8rem">
           <template #body="slotProps">
-            <ButtonComponent label="Удалить" outlined severity="danger" @click="confirmDeleteResident(slotProps.data)" />
+            <ButtonComponent icon="pi pi-trash" outlined severity="danger" @click="confirmDeleteResident(slotProps.data)" />
           </template>
         </Column>
       </DataTable>
     </div>
   </div>
-  <Dialog v-model:visible="deleteResidentDialog" :style="{ width: '450px' }" header="Подтверждение" :modal="true">
+  <DialogComponent v-model:visible="deleteDialog" :style="{ width: '450px' }" header="Подтверждение" :modal="true">
     <div class="confirmation-content">
       <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
       <span v-if="residentSelected">Вы хотите удалить <b>{{ residentSelected.fio }}</b>?</span>
     </div>
     <template #footer>
-      <ButtonComponent label="Нет" icon="pi pi-times" text @click="deleteResidentDialog = false" />
+      <ButtonComponent label="Нет" icon="pi pi-times" text @click="deleteDialog = false" />
       <ButtonComponent label="Да" icon="pi pi-check" text @click="deleteResident(residentSelected.id)" />
     </template>
-  </Dialog>
+  </DialogComponent>
   <!-- <table summary="This table shows how to create responsive tables using RWD-Table-Patterns' functionality"
       class="table table-bordered table-hover">
       <thead>
