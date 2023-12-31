@@ -7,8 +7,21 @@ npm 8.19.3
 PRIMEVUE 3.45.0
 
 FOR RUN APP:
-DEVELOPMENT - npm run dev
 
+### Compiles and hot-reloads for development
+```
+npm run dev
+```
+
+### Compiles and minifies for production
+```
+npm run build
+```
+
+### Lints and fixes files
+```
+npm run lint
+```
 
 ________SERVER______
 Laravel 10x - PHP 8.1 
@@ -22,8 +35,16 @@ DB_USERNAME=root
 DB_PASSWORD=
 
 FOR RUN 
-1. Make migration - php artisan migrate 
+1. Make migration - php artisan migrate or export DB
+### Compiles and minifies for production
+```
+php artisan migrate or export DB
+```
 2. Start APP - php artisan serve
+### Run server
+```
+php artisan serve
+```
 
 //ROUTES LIST FOR API
 
