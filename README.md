@@ -36,8 +36,12 @@ DB_DATABASE=vodokachka
 DB_USERNAME=root
 DB_PASSWORD=
 ```
-FOR RUN 
-###1. Make migration - php artisan migrate or export DB
+### FOR RUN 
+1. Make migration 
+```
+php artisan migrate or export DB
+```
+
 ### Compiles and minifies for production
 ```
 php artisan migrate or export DB
