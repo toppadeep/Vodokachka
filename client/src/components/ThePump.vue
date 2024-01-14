@@ -1,15 +1,17 @@
 <script>
-import '../assets/main.css'
-import DataTable from 'primevue/datatable'
-import Column from 'primevue/column'
-import ButtonComponent from 'primevue/button'
-import Dropdown from 'primevue/dropdown'
-import InputNumber from 'primevue/inputnumber'
-import Divider from 'primevue/divider'
-import Skeleton from 'primevue/skeleton'
-import DialogComponent from 'primevue/dialog'
-import Toast from 'primevue/toast'
-import Validation from '@/components/ErrorMessage.vue'
+import { mapState, mapActions } from 'pinia'
+import { usePumpStore } from '@/stores/PumpStore';
+import '../assets/main.css';
+import DataTable from 'primevue/datatable';
+import Column from 'primevue/column';
+import ButtonComponent from 'primevue/button';
+import Dropdown from 'primevue/dropdown';
+import InputNumber from 'primevue/inputnumber';
+import Divider from 'primevue/divider';
+import Skeleton from 'primevue/skeleton';
+import DialogComponent from 'primevue/dialog';
+import Toast from 'primevue/toast';
+import Validation from '@/components/ErrorMessage.vue';
 
 export default {
   data() {
@@ -21,7 +23,6 @@ export default {
       deleteDialog: false,
       periods: [],
       selected: {},
-      pumps: [],
       period: {},
       pump: {
         id: '',
@@ -30,6 +31,9 @@ export default {
       },
       editingRows: []
     }
+  },
+  computed: {
+    ...mapState(usePumpStore, ['pumps'])
   },
   async mounted() {
     await this.getPumps()
@@ -49,18 +53,7 @@ export default {
     DialogComponent
   },
   methods: {
-    async getPumps() {
-      const response = await fetch('http://127.0.0.1:8000/api/pump', {
-        method: 'GET'
-      })
-
-      const request = await response.json()
-      if (request.status == 'success') {
-        this.pumps = request.pumps
-      } else {
-        console.log('Happend some error')
-      }
-    },
+    ...mapActions(usePumpStore, ['getPumps']),
     async getPeriods() {
       const response = await fetch('http://127.0.0.1:8000/api/period', {
         method: 'GET'

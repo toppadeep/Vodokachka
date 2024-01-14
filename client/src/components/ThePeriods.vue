@@ -1,4 +1,6 @@
 <script>
+import { mapState, mapActions } from 'pinia'
+import { usePeriodStore } from '@/stores/PeriodStore';
 import '../assets/main.css';
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
@@ -18,7 +20,6 @@ export default {
       deleteDialog: false,
       selected: {},
       visible: false,
-      periods: [],
       period: {
         id: '',
         begin_date: '',
@@ -26,6 +27,9 @@ export default {
       },
       editingRows: []
     }
+  },
+  computed: {
+    ...mapState(usePeriodStore, ['periods'])
   },
   async mounted() {
     await this.getPeriods()
@@ -43,18 +47,7 @@ export default {
     Tag
   },
   methods: {
-    async getPeriods() {
-      const response = await fetch('http://127.0.0.1:8000/api/period', {
-        method: 'GET'
-      })
-
-      const request = await response.json()
-      if (request.status == 'success') {
-        this.periods = request.periods
-      } else {
-        this.$toast.add({ severity: 'warning', detail: 'Bad Request', life: 3000 })
-      }
-    },
+    ...mapActions(usePeriodStore, ['getPeriods']),
     async createPeriod() {
       const period = new FormData()
       period.append('begin_date', this.period.begin_date)

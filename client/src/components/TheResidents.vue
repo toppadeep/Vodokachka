@@ -1,4 +1,6 @@
 <script>
+import { mapState, mapActions } from 'pinia'
+import { useResidentStore } from '@/stores/ResidentStore';
 import '../assets/main.css'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
@@ -25,10 +27,12 @@ export default {
         start_date: ''
       },
       visible: false,
-      residents: [],
       periods: [],
       editingRows: []
     }
+  },
+  computed: {
+    ...mapState(useResidentStore, ['residents'])
   },
   async mounted() {
     await this.getResidents()
@@ -47,16 +51,7 @@ export default {
     Validation
   },
   methods: {
-    async getResidents() {
-      const response = await fetch('http://127.0.0.1:8000/api/resident', {
-        method: 'GET'
-      })
-
-      const request = await response.json()
-      if (request.status == 'success') {
-        this.residents = request.residents
-      }
-    },
+    ...mapActions(useResidentStore, ['getResidents']),
     async createResidend() {
       const resident = new FormData()
       resident.append('fio', this.resident.fio)

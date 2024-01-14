@@ -1,4 +1,6 @@
 <script>
+import { mapState, mapActions } from 'pinia'
+import { useBillStore } from '@/stores/BillStore';
 import '../assets/main.css';
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
@@ -39,11 +41,11 @@ export default {
       filters: {
         month: { value: null, matchMode: FilterMatchMode.EQUALS }
       },
-      bills: [],
       editingRows: []
     }
   },
   computed: {
+    ...mapState(useBillStore, ['bills']),
     totalArea: function () {
       return this.residents.reduce((sum, resident) => sum + resident.area, 0)
     },
@@ -102,14 +104,7 @@ export default {
     Validation
   },
   methods: {
-    async getBills() {
-      const response = await fetch('http://127.0.0.1:8000/api/bill', {
-        method: 'GET'
-      })
-
-      const request = await response.json()
-      this.bills = request.bills
-    },
+    ...mapActions(useBillStore, ['getBills']),
     async getPumps() {
       const response = await fetch('http://127.0.0.1:8000/api/pump', {
         method: 'GET'

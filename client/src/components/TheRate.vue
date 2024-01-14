@@ -1,4 +1,6 @@
 <script>
+import { mapState, mapActions } from 'pinia'
+import { useRateStore } from '@/stores/RateStore';
 import '../assets/main.css';
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
@@ -22,7 +24,6 @@ export default {
       deleteDialog: false,
       periods: [],
       period: {},
-      rates: [],
       rate: {
         id: null,
         period_id: null,
@@ -30,6 +31,9 @@ export default {
       },
       editingRows: []
     }
+  },
+  computed: {
+    ...mapState(useRateStore, ['rates'])
   },
   async mounted() {
     await this.getRates()
@@ -50,18 +54,7 @@ export default {
     Tag
   },
   methods: {
-    async getRates() {
-      const response = await fetch('http://127.0.0.1:8000/api/rate', {
-        method: 'GET'
-      })
-
-      const request = await response.json()
-      if (request.status == 'success') {
-        this.rates = request.rates
-      } else {
-        console.log('Some errors')
-      }
-    },
+   ...mapActions(useRateStore, ['getRates']),
     async getPeriods() {
       const response = await fetch('http://127.0.0.1:8000/api/period', {
         method: 'GET'
