@@ -1,6 +1,7 @@
 <script>
 import { mapState, mapActions } from 'pinia'
-import { useResidentStore } from '@/stores/ResidentStore';
+import { useResidentStore } from '@/stores/ResidentStore'
+import { useIndexStore } from '@/stores/IndexStore'
 import '../assets/main.css'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
@@ -17,7 +18,6 @@ export default {
   data() {
     return {
       errors: [],
-      loading: true,
       deleteDialog: false,
       selected: {},
       resident: {
@@ -26,17 +26,18 @@ export default {
         area: '',
         start_date: ''
       },
-      visible: false,
       periods: [],
       editingRows: []
     }
   },
   computed: {
-    ...mapState(useResidentStore, ['residents'])
+    ...mapState(useIndexStore, ['visible']),
+    ...mapState(useResidentStore, ['residents']),
+    ...mapState(useIndexStore, ['loading']),
   },
   async mounted() {
-    await this.getResidents()
-    this.loading = false
+    await this.getResidents();
+    await this.switchLoading();
   },
   components: {
     DataTable,
@@ -51,7 +52,10 @@ export default {
     Validation
   },
   methods: {
+    ...mapActions(useIndexStore, ['openDialog']),
     ...mapActions(useResidentStore, ['getResidents']),
+    ...mapActions(useIndexStore, ['switchLoading']),
+    ...mapActions(useResidentStore, ['onRowEditSave']),
     async createResidend() {
       const resident = new FormData()
       resident.append('fio', this.resident.fio)
@@ -66,8 +70,8 @@ export default {
       const request = await response.json()
 
       if (request.status == 'success') {
-        this.residents.push(this.resident)
-        this.visible = !this.visible
+        this.residents.push(this.resident);
+        this.openDialog();
         this.$toast.add({
           severity: 'success',
           summary: 'Успешно',
@@ -77,33 +81,6 @@ export default {
       } else {
         this.errors = request.errors
         this.$toast.add({ severity: 'error', detail: 'Дачник не добавлен', life: 3000 })
-      }
-    },
-    async onRowEditSave(event) {
-      let { newData } = event
-      const resident = new FormData()
-      resident.append('fio', newData.fio)
-      resident.append('area', newData.area)
-      resident.append('start_date', newData.start_date)
-
-      const response = await fetch(`http://127.0.0.1:8000/api/resident/update/${newData.id}`, {
-        method: 'POST',
-        body: resident
-      })
-
-      const request = await response.json()
-
-      if (request.status == 'success') {
-        this.residents.push(this.resident)
-        this.$toast.add({
-          severity: 'success',
-          summary: 'Успешно',
-          detail: request.response,
-          life: 3000
-        })
-      } else {
-        this.errors = request.errors
-        this.$toast.add({ severity: 'error', detail: 'Данные не обновлены', life: 3000 })
       }
     },
     confirmDelete(resident) {
@@ -119,8 +96,6 @@ export default {
 
       const request = await response.json()
       if (request.status == 'success') {
-        const index = this.residents.indexOf(id)
-        this.residents.splice(index, 1)
         this.$toast.add({
           severity: 'success',
           summary: 'Успешно',
@@ -138,7 +113,7 @@ export default {
 <template>
   <div class="wrapperformCreate" v-if="visible">
     <form @submit.prevent="createResidend()" class="formCreate">
-      <ButtonComponent class="closeButton" label="Закрыть" @click="visible = !visible" />
+      <ButtonComponent class="closeButton" label="Закрыть" @click="openDialog()" />
       <Divider align="center" type="solid">
         <b>Добавление нового дачника</b>
       </Divider>
@@ -173,13 +148,19 @@ export default {
   <div class="card">
     <Toast />
     <div
-      style="display: flex; flex: row nowrap; justify-content: end; align-items: center; margin-bottom: 1.5em;"
+      style="
+        display: flex;
+        flex: row nowrap;
+        justify-content: end;
+        align-items: center;
+        margin-bottom: 1.5em;
+      "
     >
-      <ButtonComponent icon="pi pi-plus" size="large" rounded @click="visible = !visible" />
+      <ButtonComponent icon="pi pi-plus" size="large" rounded @click="openDialog()" />
     </div>
     <div class="card">
       <DataTable
-        :value="residents"
+        :value="this.residents"
         paginator
         :rows="8"
         tableStyle="min-width: 50rem"
@@ -287,3 +268,4 @@ export default {
     </template>
   </DialogComponent>
 </template>
+@/stores/Store

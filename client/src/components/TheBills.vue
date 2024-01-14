@@ -1,18 +1,23 @@
 <script>
 import { mapState, mapActions } from 'pinia'
-import { useBillStore } from '@/stores/BillStore';
-import '../assets/main.css';
-import DataTable from 'primevue/datatable';
-import Column from 'primevue/column';
-import ButtonComponent from 'primevue/button';
-import Divider from 'primevue/divider';
-import InputNumber from 'primevue/inputnumber';
-import Dropdown from 'primevue/dropdown';
-import Skeleton from 'primevue/skeleton';
-import Toast from 'primevue/toast';
-import { FilterMatchMode } from 'primevue/api';
-import DialogComponent from 'primevue/dialog';
-import Validation from '@/components/ErrorMessage.vue';
+import { useIndexStore } from '@/stores/IndexStore'
+import { useBillStore } from '@/stores/BillStore'
+import { useRateStore } from '@/stores/RateStore'
+import { useResidentStore } from '@/stores/ResidentStore'
+import { usePumpStore } from '@/stores/PumpStore'
+import { usePeriodStore } from '@/stores/PeriodStore'
+import '../assets/main.css'
+import DataTable from 'primevue/datatable'
+import Column from 'primevue/column'
+import ButtonComponent from 'primevue/button'
+import Divider from 'primevue/divider'
+import InputNumber from 'primevue/inputnumber'
+import Dropdown from 'primevue/dropdown'
+import Skeleton from 'primevue/skeleton'
+import Toast from 'primevue/toast'
+import { FilterMatchMode } from 'primevue/api'
+import DialogComponent from 'primevue/dialog'
+import Validation from '@/components/ErrorMessage.vue'
 
 export default {
   data() {
@@ -20,15 +25,9 @@ export default {
       errors: [],
       selected: {},
       deleteDialog: false,
-      loading: true,
-      visible: false,
       currentMonth: null,
       periodsData: [],
-      rates: [],
-      pumps: [],
-      residents: [],
       resident: {},
-      periods: [],
       period: {},
       resident_names: [],
       bill: {
@@ -45,7 +44,14 @@ export default {
     }
   },
   computed: {
+    ...mapState(useIndexStore, ['visible']),
+    ...mapState(useIndexStore, ['loading']),
     ...mapState(useBillStore, ['bills']),
+    ...mapState(useResidentStore, ['residents']),
+    ...mapState(useRateStore, ['rates']),
+    ...mapState(usePeriodStore, ['periods']),
+    ...mapState(usePumpStore, ['pumps']),
+
     totalArea: function () {
       return this.residents.reduce((sum, resident) => sum + resident.area, 0)
     },
@@ -83,14 +89,6 @@ export default {
       return this.bills.filter((bill) => bill.period_id == this.period.currentMonth)
     }
   },
-  async mounted() {
-    await this.getResidents()
-    await this.getPeriods()
-    await this.getRates()
-    await this.getPumps()
-    await this.getBills()
-    this.loading = false
-  },
   components: {
     DataTable,
     Column,
@@ -103,47 +101,19 @@ export default {
     DialogComponent,
     Validation
   },
+  async mounted() {
+    await this.getBills();
+    await this.switchLoading();
+  },
   methods: {
+    ...mapActions(useIndexStore, ['openDialog']),
     ...mapActions(useBillStore, ['getBills']),
-    async getPumps() {
-      const response = await fetch('http://127.0.0.1:8000/api/pump', {
-        method: 'GET'
-      })
+    ...mapActions(useResidentStore, ['getResidents']),
+    ...mapActions(usePumpStore, ['getPumps']),
+    ...mapActions(usePeriodStore, ['getPeriods']),
+    ...mapActions(useRateStore, ['getRates']),
+    ...mapActions(useIndexStore, ['switchLoading']),
 
-      const request = await response.json()
-      this.pumps = request.pumps
-    },
-    async getResidents() {
-      const response = await fetch('http://127.0.0.1:8000/api/resident', {
-        method: 'GET'
-      })
-
-      const residents = await response.json()
-      this.residents = residents.residents
-    },
-    async getPeriods() {
-      const response = await fetch('http://127.0.0.1:8000/api/period', {
-        method: 'GET'
-      })
-
-      const request = await response.json()
-      this.periods = request.periods
-      this.periodsData = request.periods.map(function (obj) {
-        return obj.month
-      })
-    },
-    async getRates() {
-      const response = await fetch('http://127.0.0.1:8000/api/rate', {
-        method: 'GET'
-      })
-
-      const request = await response.json()
-      if (request.status == 'success') {
-        this.rates = request.rates
-      } else {
-        console.log('Some errors')
-      }
-    },
     async createBill() {
       const bill = new FormData()
 
@@ -160,7 +130,7 @@ export default {
 
       if (request.status == 'success') {
         this.bills.push(this.bill)
-        this.visible = !this.visible
+        this.openDialog();
         this.$toast.add({
           severity: 'success',
           summary: 'Успешно',
@@ -173,17 +143,17 @@ export default {
       }
     },
     async onRowEditSave(event) {
-      let { newData } = event;
-      const bill = new FormData();
-      bill.append('period_id', newData.period_id);
-      bill.append('amount_rub', newData.amount_rub);
+      let { newData } = event
+      const bill = new FormData()
+      bill.append('period_id', newData.period_id)
+      bill.append('amount_rub', newData.amount_rub)
 
       const response = await fetch(`http://127.0.0.1:8000/api/bill/update/${newData.id}`, {
         method: 'POST',
         body: bill
-      });
+      })
 
-      const request = await response.json();
+      const request = await response.json()
 
       if (request.status == 'success') {
         this.$toast.add({
@@ -191,22 +161,22 @@ export default {
           summary: 'Успешно',
           detail: request.response,
           life: 3000
-        });
+        })
       } else {
-        this.errors = request.errors;
-        this.$toast.add({ severity: 'error', detail: 'Данные не обновлены', life: 3000 });
+        this.errors = request.errors
+        this.$toast.add({ severity: 'error', detail: 'Данные не обновлены', life: 3000 })
       }
     },
     confirmDelete(bill) {
-      this.selected = bill;
-      this.deleteDialog = true;
+      this.selected = bill
+      this.deleteDialog = true
     },
     async deleteBill(id) {
       const response = await fetch(`http://127.0.0.1:8000/api/bill/${id}`, {
         method: 'DELETE'
-      });
+      })
 
-      this.deleteDialog = false;
+      this.deleteDialog = false
 
       const request = await response.json()
       if (request.status == 'success') {
@@ -217,10 +187,10 @@ export default {
           summary: 'Успешно',
           detail: request.response,
           life: 3000
-        });
+        })
       } else {
-        this.errors = request.errors;
-        this.$toast.add({ severity: 'error', detail: 'Счёт не исполнен', life: 3000 });
+        this.errors = request.errors
+        this.$toast.add({ severity: 'error', detail: 'Счёт не исполнен', life: 3000 })
       }
     }
   }
@@ -230,7 +200,7 @@ export default {
 <template>
   <div class="wrapperformCreate" v-if="visible">
     <form @submit.prevent="createBill()" class="formCreate">
-      <ButtonComponent class="closeButton" label="Закрыть" @click="visible = !visible" />
+      <ButtonComponent class="closeButton" label="Закрыть" @click="openDialog()" />
       <Divider align="center" type="solid">
         <b>Создать счёт</b>
       </Divider>
@@ -312,7 +282,7 @@ export default {
         margin-bottom: 1.5em;
       "
     >
-      <ButtonComponent icon="pi pi-plus" size="large" rounded @click="visible = !visible" />
+      <ButtonComponent icon="pi pi-plus" size="large" rounded @click="openDialog()" />
     </div>
     <DataTable
       v-model:filters="filters"
@@ -340,7 +310,7 @@ export default {
         <template v-if="loading" #body>
           <Skeleton></Skeleton>
         </template>
-      </Column> 
+      </Column>
       <Column field="month" sortable header="Тариф за" :showFilterMenu="false">
         <template v-if="loading" #body>
           <Skeleton></Skeleton>
@@ -349,7 +319,7 @@ export default {
           <Dropdown
             v-model="filterModel.value"
             @change="filterCallback()"
-            :options="periodsData"
+            :options="periods"
             placeholder="Выберите период"
           >
           </Dropdown>
@@ -407,9 +377,7 @@ export default {
     :modal="true"
   >
     <div class="confirmation-content">
-      <span v-if="selected"
-        >Вы хотите удалить cчёт?</span
-      >
+      <span v-if="selected">Вы хотите удалить cчёт?</span>
     </div>
     <template #footer>
       <ButtonComponent
@@ -430,3 +398,4 @@ export default {
     </template>
   </DialogComponent>
 </template>
+@/stores/Store

@@ -1,28 +1,27 @@
 <script>
 import { mapState, mapActions } from 'pinia'
-import { useRateStore } from '@/stores/RateStore';
-import '../assets/main.css';
-import DataTable from 'primevue/datatable';
-import Column from 'primevue/column';
-import ButtonComponent from 'primevue/button';
-import Divider from 'primevue/divider';
-import Skeleton from 'primevue/skeleton';
-import InputNumber from 'primevue/inputnumber';
-import Dropdown from 'primevue/dropdown';
-import Toast from 'primevue/toast';
-import Validation from '@/components/ErrorMessage.vue';
-import DialogComponent from 'primevue/dialog';
-import Tag from 'primevue/tag';
+import { useIndexStore } from '@/stores/IndexStore'
+import { useRateStore } from '@/stores/RateStore'
+import { usePeriodStore } from '@/stores/PeriodStore'
+import '../assets/main.css'
+import DataTable from 'primevue/datatable'
+import Column from 'primevue/column'
+import ButtonComponent from 'primevue/button'
+import Divider from 'primevue/divider'
+import Skeleton from 'primevue/skeleton'
+import InputNumber from 'primevue/inputnumber'
+import Dropdown from 'primevue/dropdown'
+import Toast from 'primevue/toast'
+import Validation from '@/components/ErrorMessage.vue'
+import DialogComponent from 'primevue/dialog'
+import Tag from 'primevue/tag'
 
 export default {
   data() {
     return {
       errors: [],
       selected: {},
-      loading: true,
-      visible: false,
       deleteDialog: false,
-      periods: [],
       period: {},
       rate: {
         id: null,
@@ -33,12 +32,14 @@ export default {
     }
   },
   computed: {
-    ...mapState(useRateStore, ['rates'])
+    ...mapState(useIndexStore, ['visible']),
+    ...mapState(useRateStore, ['rates']),
+    ...mapState(useIndexStore, ['loading']),
+    ...mapState(usePeriodStore, ['periods'])
   },
   async mounted() {
-    await this.getRates()
-    await this.getPeriods()
-    this.loading = false
+    await this.getRates();
+    await this.switchLoading();
   },
   components: {
     DataTable,
@@ -54,19 +55,10 @@ export default {
     Tag
   },
   methods: {
-   ...mapActions(useRateStore, ['getRates']),
-    async getPeriods() {
-      const response = await fetch('http://127.0.0.1:8000/api/period', {
-        method: 'GET'
-      })
-
-      const request = await response.json()
-      if (request.status == 'success') {
-        this.periods = request.periods
-      } else {
-        console.log('Some errors')
-      }
-    },
+    ...mapActions(useIndexStore, ['openDialog']),
+    ...mapActions(useRateStore, ['getRates']),
+    ...mapActions(usePeriodStore, ['getPeriods']),
+    ...mapActions(useIndexStore, ['switchLoading']),
     async createRate() {
       const rate = new FormData()
 
@@ -81,7 +73,7 @@ export default {
       const request = await response.json()
       if (request.status == 'success') {
         this.rates.push(this.rate)
-        this.visible = !this.visible
+        this.openDialog();
         this.$toast.add({
           severity: 'success',
           summary: 'Успешно',
@@ -89,22 +81,22 @@ export default {
           life: 3000
         })
       } else {
-        this.errors = request.errors;
+        this.errors = request.errors
         this.$toast.add({ severity: 'error', detail: 'Дачник не добавлен', life: 3000 })
       }
     },
     async onRowEditSave(event) {
-      let { newData } = event;
-      const rate = new FormData();
-      rate.append('period_id', newData.period_id.id);
-      rate.append('amount_price', newData.amount_price);
+      let { newData } = event
+      const rate = new FormData()
+      rate.append('period_id', newData.period_id.id)
+      rate.append('amount_price', newData.amount_price)
 
       const response = await fetch(`http://127.0.0.1:8000/api/rate/update/${newData.id}`, {
         method: 'POST',
         body: rate
       })
 
-      const request = await response.json();
+      const request = await response.json()
 
       if (request.status == 'success') {
         this.$toast.add({
@@ -112,22 +104,22 @@ export default {
           summary: 'Успешно',
           detail: request.response,
           life: 3000
-        });
+        })
       } else {
-        this.errors = request.errors;
-        this.$toast.add({ severity: 'error', detail: 'Данные не обновлены', life: 3000 });
+        this.errors = request.errors
+        this.$toast.add({ severity: 'error', detail: 'Данные не обновлены', life: 3000 })
       }
     },
     confirmDelete(event) {
-      this.selected = event;
-      this.deleteDialog = true;
+      this.selected = event
+      this.deleteDialog = true
     },
     async deleteRate(id) {
       const response = await fetch(`http://127.0.0.1:8000/api/rate/${id}`, {
         method: 'DELETE'
-      });
+      })
 
-      this.deleteDialog = false;
+      this.deleteDialog = false
 
       const request = await response.json()
       if (request.status == 'success') {
@@ -138,10 +130,10 @@ export default {
           summary: 'Успешно',
           detail: request.response,
           life: 3000
-        });
+        })
       } else {
-        this.errors = request.errors;
-        this.$toast.add({ severity: 'error', detail: 'Тариф не удалён', life: 3000 });
+        this.errors = request.errors
+        this.$toast.add({ severity: 'error', detail: 'Тариф не удалён', life: 3000 })
       }
     }
   }
@@ -151,7 +143,7 @@ export default {
 <template>
   <div class="wrapperformCreate" v-if="visible">
     <form @submit.prevent="createRate()" class="formCreate">
-      <ButtonComponent class="closeButton" label="Закрыть" @click="visible = !visible" />
+      <ButtonComponent class="closeButton" label="Закрыть" @click="openDialog()" />
       <Divider align="center" type="solid">
         <b>Создание нового тарифа</b>
       </Divider>
@@ -191,7 +183,7 @@ export default {
         margin-bottom: 1.5em;
       "
     >
-      <ButtonComponent icon="pi pi-plus" size="large" rounded @click="visible = !visible" />
+      <ButtonComponent icon="pi pi-plus" size="large" rounded @click="openDialog()" />
     </div>
     <DataTable
       :value="rates"
@@ -217,7 +209,7 @@ export default {
         </template>
         <template #editor="{ data, field }">
           <Dropdown
-            style="margin-bottom: 0;"
+            style="margin-bottom: 0"
             v-model="data[field]"
             inputId="period_id"
             name="period_id"
@@ -293,3 +285,4 @@ export default {
     </template>
   </DialogComponent>
 </template>
+@/stores/Store

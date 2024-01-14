@@ -38,7 +38,7 @@ class ResidentController extends Controller
     {
 
         $validated = validator($request->all(), [
-            'fio' => ['required', 'string', 'alpha', 'max:150', 'unique:residents'],
+            'fio' => ['required', 'string', 'max:150', 'unique:residents'],
             'area' => ['required', 'numeric', 'min:1', 'max:1000'],
             'start_date' => ['required', 'date'],
         ]);

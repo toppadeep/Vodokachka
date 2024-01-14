@@ -1,25 +1,24 @@
 <script>
 import { mapState, mapActions } from 'pinia'
-import { usePeriodStore } from '@/stores/PeriodStore';
-import '../assets/main.css';
-import DataTable from 'primevue/datatable';
-import Column from 'primevue/column';
-import ButtonComponent from 'primevue/button';
-import Divider from 'primevue/divider';
-import Skeleton from 'primevue/skeleton';
-import Toast from 'primevue/toast';
-import DialogComponent from 'primevue/dialog';
-import Validation from '@/components/ErrorMessage.vue';
-import Tag from 'primevue/tag';
+import { useIndexStore } from '@/stores/IndexStore'
+import { usePeriodStore } from '@/stores/PeriodStore'
+import '../assets/main.css'
+import DataTable from 'primevue/datatable'
+import Column from 'primevue/column'
+import ButtonComponent from 'primevue/button'
+import Divider from 'primevue/divider'
+import Skeleton from 'primevue/skeleton'
+import Toast from 'primevue/toast'
+import DialogComponent from 'primevue/dialog'
+import Validation from '@/components/ErrorMessage.vue'
+import Tag from 'primevue/tag'
 
 export default {
   data() {
     return {
       errors: [],
-      loading: true,
       deleteDialog: false,
       selected: {},
-      visible: false,
       period: {
         id: '',
         begin_date: '',
@@ -29,11 +28,13 @@ export default {
     }
   },
   computed: {
-    ...mapState(usePeriodStore, ['periods'])
+    ...mapState(useIndexStore, ['visible']),
+    ...mapState(usePeriodStore, ['periods']),
+    ...mapState(useIndexStore, ['loading'])
   },
   async mounted() {
-    await this.getPeriods()
-    this.loading = false
+    await this.getPeriods();
+    await this.switchLoading();
   },
   components: {
     DataTable,
@@ -47,7 +48,9 @@ export default {
     Tag
   },
   methods: {
+    ...mapActions(useIndexStore, ['openDialog']),
     ...mapActions(usePeriodStore, ['getPeriods']),
+    ...mapActions(useIndexStore, ['switchLoading']),
     async createPeriod() {
       const period = new FormData()
       period.append('begin_date', this.period.begin_date)
@@ -56,12 +59,12 @@ export default {
       const response = await fetch('http://127.0.0.1:8000/api/period', {
         method: 'POST',
         body: period
-      })
+      });
 
       const request = await response.json()
       if (request.status == 'success') {
         this.periods.push(this.period)
-        this.visible = !this.visible
+        this.openDialog();
         this.$toast.add({
           severity: 'success',
           summary: 'Успешно',
@@ -131,7 +134,7 @@ export default {
 <template>
   <div class="wrapperformCreate" v-if="visible">
     <form @submit.prevent="createPeriod()" class="formCreate">
-      <ButtonComponent class="closeButton" label="Закрыть" @click="visible = !visible" />
+      <ButtonComponent class="closeButton" label="Закрыть" @click="openDialog()" />
       <Divider align="center" type="solid">
         <b>Добавление нового периода</b>
       </Divider>
@@ -173,7 +176,7 @@ export default {
         margin-bottom: 1.5em;
       "
     >
-      <ButtonComponent icon="pi pi-plus" size="large" rounded @click="visible = !visible" />
+      <ButtonComponent icon="pi pi-plus" size="large" rounded @click="openDialog()" />
     </div>
     <div class="card">
       <DataTable
@@ -190,12 +193,12 @@ export default {
         @row-edit-save="onRowEditSave"
       >
         <Column field="id" header="ID">
-          <template v-if="loading" #body>
+          <template v-if="this.loading" #body>
             <Skeleton></Skeleton>
           </template>
         </Column>
         <Column field="begin_date" header="Начало периода">
-          <template v-if="loading" #body>
+          <template v-if="this.loading" #body>
             <Skeleton></Skeleton>
           </template>
           <template #editor="{ data, field }">
@@ -213,7 +216,7 @@ export default {
           </template>
         </Column>
         <Column field="end_date" header="Конец периода">
-          <template v-if="loading" #body>
+          <template v-if="this.loading" #body>
             <Skeleton></Skeleton>
           </template>
           <template #editor="{ data, field }">
@@ -231,7 +234,7 @@ export default {
           </template>
         </Column>
         <Column field="month" header="Период">
-          <template v-if="loading" #body>
+          <template v-if="this.loading" #body>
             <Skeleton></Skeleton>
           </template>
         </Column>
@@ -287,3 +290,4 @@ export default {
     </template>
   </DialogComponent>
 </template>
+@/stores/Store

@@ -8,12 +8,12 @@ export const usePumpStore = defineStore({
   actions: {
     
     async getPumps() {
-
         const response = await fetch('http://127.0.0.1:8000/api/pump', {
           method: 'GET'
-        })
+        });
+        
         const request = await response.json();
-        this.pumps = request.pumps;
+        this.pumps = await request.pumps;
       },
   },
 })

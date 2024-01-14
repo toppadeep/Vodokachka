@@ -1,27 +1,26 @@
 <script>
 import { mapState, mapActions } from 'pinia'
-import { usePumpStore } from '@/stores/PumpStore';
-import '../assets/main.css';
-import DataTable from 'primevue/datatable';
-import Column from 'primevue/column';
-import ButtonComponent from 'primevue/button';
-import Dropdown from 'primevue/dropdown';
-import InputNumber from 'primevue/inputnumber';
-import Divider from 'primevue/divider';
-import Skeleton from 'primevue/skeleton';
-import DialogComponent from 'primevue/dialog';
-import Toast from 'primevue/toast';
-import Validation from '@/components/ErrorMessage.vue';
+import { useIndexStore } from '@/stores/IndexStore'
+import { usePumpStore } from '@/stores/PumpStore'
+import { usePeriodStore } from '@/stores/PeriodStore'
+import '../assets/main.css'
+import DataTable from 'primevue/datatable'
+import Column from 'primevue/column'
+import ButtonComponent from 'primevue/button'
+import Dropdown from 'primevue/dropdown'
+import InputNumber from 'primevue/inputnumber'
+import Divider from 'primevue/divider'
+import Skeleton from 'primevue/skeleton'
+import DialogComponent from 'primevue/dialog'
+import Toast from 'primevue/toast'
+import Validation from '@/components/ErrorMessage.vue'
 
 export default {
   data() {
     return {
       errors: [],
-      loading: true,
-      visible: false,
       defaultOption: 'Выберите период',
       deleteDialog: false,
-      periods: [],
       selected: {},
       period: {},
       pump: {
@@ -33,12 +32,14 @@ export default {
     }
   },
   computed: {
-    ...mapState(usePumpStore, ['pumps'])
+    ...mapState(useIndexStore, ['visible']),
+    ...mapState(usePumpStore, ['pumps']),
+    ...mapState(useIndexStore, ['loading']),
+    ...mapState(usePeriodStore, ['periods'])
   },
   async mounted() {
-    await this.getPumps()
-    await this.getPeriods()
-    this.loading = false
+    await this.getPumps();
+    await this.switchLoading();
   },
   components: {
     DataTable,
@@ -53,19 +54,10 @@ export default {
     DialogComponent
   },
   methods: {
+    ...mapActions(useIndexStore, ['openDialog']),
     ...mapActions(usePumpStore, ['getPumps']),
-    async getPeriods() {
-      const response = await fetch('http://127.0.0.1:8000/api/period', {
-        method: 'GET'
-      })
-
-      const request = await response.json()
-      if (request.status == 'success') {
-        this.periods = request.periods
-      } else {
-        console.log('Happend some error')
-      }
-    },
+    ...mapActions(usePeriodStore, ['getPeriods']),
+    ...mapActions(useIndexStore, ['switchLoading']),
     async createPump() {
       const pump = new FormData()
       pump.append('period_id', this.period.id)
@@ -79,13 +71,14 @@ export default {
       const request = await response.json()
 
       if (request.status == 'success') {
-        this.visible = !this.visible
+        this.pumps.push(this.pump);
+        this.openDialog();
         this.$toast.add({
           severity: 'success',
           summary: 'Успешно',
           detail: request.response,
           life: 3000
-        })
+        });
       } else {
         this.errors = request.errors
         this.$toast.add({ severity: 'error', detail: 'Показания не сохранены', life: 3000 })
@@ -150,7 +143,7 @@ export default {
 <template>
   <div class="wrapperformCreate" v-if="visible">
     <form @submit.prevent="createPump()" class="formCreate">
-      <ButtonComponent class="closeButton" label="Закрыть" @click="visible = !visible" />
+      <ButtonComponent class="closeButton" label="Закрыть" @click="openDialog()" />
       <Divider align="center" type="solid">
         <b>Внести новые показания счётчика</b>
       </Divider>
@@ -190,7 +183,7 @@ export default {
         margin-bottom: 1.5em;
       "
     >
-      <ButtonComponent icon="pi pi-plus" size="large" rounded @click="visible = !visible" />
+      <ButtonComponent icon="pi pi-plus" size="large" rounded @click="openDialog()" />
     </div>
     <DataTable
       :value="pumps"
@@ -273,3 +266,4 @@ export default {
     </template>
   </DialogComponent>
 </template>
+@/stores/Store
