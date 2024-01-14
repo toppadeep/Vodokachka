@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Rate;
 use App\Http\Resources\RateResource;
+use Illuminate\Validation\Rule;
 
 class RateController extends Controller
 {
@@ -27,15 +28,25 @@ class RateController extends Controller
      */
     public function store(Request $request)
     {
-        Rate::create([
-            'period_id' => $request->period_id,
-            'amount_price' => $request->amount_price,
+
+        $validated = validator($request->all(), [
+            'period_id' => [ 'required', 'unique:rates' ],
+            'amount_price' => [ 'required', 'numeric', 'min:1', 'max:10000' ]
         ]);
 
-        return response()->json([
-            'status' => 'success',
-            'response' => 'Новый тариф создан'
-        ]);
+        if ($validated->fails()) {
+            return response()->json(['errors' => $validated->errors()]);
+        }else {
+            Rate::create([
+                'period_id' => $request->period_id,
+                'amount_price' => $request->amount_price,
+            ]);
+
+            return response()->json([
+                'status' => 'success',
+                'response' => 'Новый тариф создан'
+            ]);
+        };
     }
 
     /**
@@ -54,15 +65,21 @@ class RateController extends Controller
         $rate = Rate::find($id);
 
         if ($rate) {
-            $rate->update([
-                'period_id' => $request->period_id,
-                'amount_price' => $request->amount_price,
+            $validated = validator($request->all(), [
+                'period_id' => [ 'required', Rule::unique('rates')->ignore($rate) ],
+                'amount_price' => [ 'required', 'numeric', 'min:1', 'max:10000' ]
             ]);
     
-            return response()->json([
-                'status' => 'success',
-                'response' => 'Данные обновлены'
-            ]);
+            if ($validated->fails()) {
+                return response()->json(['errors' => $validated->errors()]);
+            }else {
+                $rate->update($request->all());
+    
+                return response()->json([
+                    'status' => 'success',
+                    'response' => 'Данные обновлены'
+                ]);
+            };
         }else {
             return response()->json([
                 'status' => 'error',
@@ -76,6 +93,26 @@ class RateController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        try {
+            $rate = Rate::find($id);
+            if ($rate) {
+                $rate->delete();
+        
+                return response()->json([
+                    'status' => 'success',
+                    'response' => 'Тариф удалён'
+                ]);
+            }else {
+                return response()->json([
+                    'status' => 'error',
+                    'response' => 'Тариф не найден'
+                ]);
+            };
+
+        }catch (QueryException $e) {
+
+            return response()->json($e);
+    
+        }
     }
 }

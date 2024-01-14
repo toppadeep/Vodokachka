@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use App\Models\Resident;
 use App\Http\Resources\ResidentResource;
 
@@ -35,16 +36,25 @@ class ResidentController extends Controller
      */
     public function store(Request $request)
     {
-        Resident::create([
+
+        $validated = validator($request->all(), [
+            'fio' => ['required', 'string', 'alpha', 'max:150', 'unique:residents'],
+            'area' => ['required', 'numeric', 'min:1', 'max:1000'],
+            'start_date' => ['required', 'date'],
+        ]);
+
+       if ($validated->fails()) {
+            return response()->json(['errors'=>$validated->errors()]);
+       }else {
+            Resident::create([
             "fio" => $request->fio,
             "area" => $request->area,
             "start_date" => $request->start_date
         ]);
-        
 
-        return response()->json([
-            'status' => 'success', 'response' => "Дачник подключен"
-        ], 200);
+        return response()->json(['status' => 'success'], 201);
+       }
+           
     }
 
     /**
@@ -76,10 +86,20 @@ class ResidentController extends Controller
                 'status' => 'error', 'response' => "Дачник не найден"
             ], 200);
         }else {
-            $resident->update($request->all());
-            return response()->json([
-                'status' => 'success', 'response' => "Данные обновлены"
-            ], 200);
+            $validated = validator($request->all(), [
+                'fio' => ['nullable', 'string', 'max:150', Rule::unique('residents', 'fio')->ignore($resident)],
+                'area' => ['nullable', 'numeric', 'min:1', 'max:1000'],
+                'start_date' => ['nullable', 'date', 'after:2023-01-01', 'before:2025-12-30'],
+            ]);
+    
+           if ($validated->fails()) {
+                return response()->json(['errors'=>$validated->errors()]);
+           }else {
+                $resident->update($request->all());
+    
+            return response()->json(['status' => 'success'], 201);
+           }
+    
         }
 
     }

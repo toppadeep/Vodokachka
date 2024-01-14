@@ -31,12 +31,22 @@ class PeriodController extends Controller
      */
     public function store(Request $request)
     {
-        Period::create([
-            "begin_date" => $request->begin_date,
-            "end_date" => $request->end_date
+        $validated = validator($request->all(), [
+            "begin_date" => ['required', 'date', 'before:end_date'],
+            "end_date" => ['required', 'date', 'after:begin_date']
         ]);
 
-        return response()->json(['status' => 'success', 'response' => 'Период добавлен'], 200);
+        if ($validated->fails()) {
+            return response()->json(['errors' => $validated->errors()], 422);
+        }else {
+
+            Period::create([
+                "begin_date" => $request->begin_date,
+                "end_date" => $request->end_date
+            ]);
+    
+            return response()->json(['status' => 'success'], 200);
+        }
     }
 
     /**
@@ -63,15 +73,19 @@ class PeriodController extends Controller
         $period = Period::find($id);
 
         if ($period) {
-            $period->update([
-                'begin_date' => $request->begin_date,
-                'end_date' => $request->end_date,
+            $validated = validator($request->all(), [
+                "begin_date" => ['nullable', 'date', 'before:end_date'],
+                "end_date" => ['nullable', 'date', 'after:begin_date']
             ]);
     
-            return response()->json([
-                'status' => 'success',
-                'response' => 'Данные обновлены'
-            ]);
+            if ($validated->fails()) {
+                return response()->json(['errors' => $validated->errors()], 422);
+            }else {
+    
+                $period->update($request->all());
+        
+                return response()->json(['status' => 'success'], 200);
+            }
         }else {
             return response()->json([
                 'status' => 'error',
@@ -85,20 +99,26 @@ class PeriodController extends Controller
      */
     public function destroy(string $id)
     {
-        $period = Period::find($id);
+        try {
+            $period = Period::find($id);
+            if ($period) {
+                $period->delete();
         
-        if ($period) {
-            $period->delete();
+                return response()->json([
+                    'status' => 'success',
+                    'response' => 'Период удалён'
+                ]);
+            }else {
+                return response()->json([
+                    'status' => 'error',
+                    'response' => 'Период не найден'
+                ]);
+            };
+
+        }catch (QueryException $e) {
+
+            return response()->json($e);
     
-            return response()->json([
-                'status' => 'success',
-                'response' => 'Период удалён'
-            ]);
-        }else {
-            return response()->json([
-                'status' => 'Not found',
-                'response' => 'Невозможно удалить период'
-            ]);
         }
     }
 }

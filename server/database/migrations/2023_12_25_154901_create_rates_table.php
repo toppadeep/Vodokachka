@@ -17,7 +17,13 @@ return new class extends Migration
             $table->float('amount_price'); // Цена за кубометр воды
             $table->timestampTz('create_date')->useCurrent(); // Дата создания тарифа
 
-            $table->foreign('period_id')->references('id')->on('periods');
+            $table
+            ->foreign('period_id')
+            ->references('id')
+            ->on('periods'); // Внешний ключ: нельзя удалять период 
+                            // по которому сформирован тариф
+
+
         });
     }
 

@@ -1,75 +1,184 @@
 <script>
-import TheResidents from '@/components/TheResidents.vue';
-import TheBills from '@/components/TheBills.vue';
-import ThePeriods from '@/components/ThePeriods.vue';
-import ThePump from '@/components/ThePump.vue';
-import TheRate from '@/components/TheRate.vue';
-import TabView from 'primevue/tabview';
-import TabPanel from 'primevue/tabpanel';
-import Skeleton from 'primevue/skeleton';
-import Divider from 'primevue/divider';
+import InputText from 'primevue/inputtext'
+import InputNumber from 'primevue/inputnumber'
+import Toast from 'primevue/toast'
+import Validation from '@/components/ErrorMessage.vue'
+import Skeleton from 'primevue/skeleton'
+import Divider from 'primevue/divider'
+import Logo from '../assets/logo2.jpg'
+import Banner from '../assets/banner.jpg'
+import ButtonComponent from 'primevue/button'
+import Menubar from 'primevue/menubar'
+import LogIn from '@/components/Authorization/logIn.vue'
+import SingIn from '@/components/Authorization/singIn.vue'
+import TabView from 'primevue/tabview'
+import TabPanel from 'primevue/tabpanel'
 
 export default {
   data() {
     return {
-      view: 'Периоды',
-      views: ['Дачники', 'Периоды', 'Счётчик', 'Счета', 'Тарифы']
+      bills: [],
+      loading: true,
+      errors: [],
+      visible: false,
+      logo: Logo,
+      banner: Banner,
+      items: [
+        {
+          label: 'Главная',
+          icon: 'pi pi-home',
+          route: '/'
+        },
+        {
+          label: 'Тарифы',
+          icon: 'pi pi-server',
+          route: '/'
+        },
+        {
+          label: 'О нас',
+          icon: 'pi pi-envelope',
+          route: '/'
+        },
+        {
+          label: 'Админка',
+          icon: 'pi pi-envelope',
+          route: '/admin'
+        }
+      ],
+      view: 'Регистрация',
+      views: ['Регистрация', 'Вход']
     }
   },
+  async mounted() {
+    await this.getBills()
+    this.loading = false
+  },
   methods: {
-    switchingComponent(view) {
-      this.view = view
+    switching() {
+      this.visible = !this.visible
+    },
+    async getBills() {
+      const response = await fetch('http://127.0.0.1:8000/api/bill', {
+        method: 'GET'
+      })
+
+      const request = await response.json()
+      this.bills = request.bills
     }
   },
   components: {
-    Дачники: TheResidents,
-    Счета: TheBills,
-    Периоды: ThePeriods,
-    Счётчик: ThePump,
-    Тарифы: TheRate,
-    TabView,
-    TabPanel,
+    Регистрация: LogIn,
+    Вход: SingIn,
     Skeleton,
-    Divider
+    InputText,
+    InputNumber,
+    Toast,
+    Validation,
+    Divider,
+    ButtonComponent,
+    Menubar,
+    TabView,
+    TabPanel
   }
 }
 </script>
 
 <template>
-  <div class="card" style="display: flex; justify-content: space-between; flex-direction: column;">
-    <div class="border-round border-1 surface-border p-4 surface-card">
-      <div style=" display: flex; flex-direction: row; width: 100%; justify-content: space-between; margin-bottom: 1em;">
-        <div>
-          <Skeleton width="10rem" class="mb-2"></Skeleton>
-          <Skeleton width="5rem" class="mb-2"></Skeleton>
-          <Skeleton height="1rem"></Skeleton>
-        </div>
-        <Skeleton shape="circle" size="4rem" class="mr-2"></Skeleton>
+  <header>
+    <div class="card" style="margin-bottom: 2em; position: relative">
+      <div
+        class="card"
+        style="
+          display: flex;
+          justify-content: flex-end;
+          align-items: center;
+          height: 100px;
+          padding: 0 2em 0 2em;
+          flex-direction: row;
+          border-radius: 1em 2em 0 0;
+          margin-top: 2em;
+          background-color: #385cfd98;
+        "
+      >
+        <img
+          :src="logo"
+          alt=""
+          width="200px"
+          height="200px"
+          style="position: absolute; top: -33%; right: 43%; border-radius: 100%; margin-right: 1em"
+        />
       </div>
-      <Skeleton width="100%" height="150px"></Skeleton>
-
+      <div class="card">
+        <Menubar :model="items">
+          <template #item="{ item, props, hasSubmenu }">
+            <router-link v-if="item.route" v-slot="{ href, navigate }" :to="item.route" custom>
+              <a v-ripple :href="href" v-bind="props.action" @click="navigate">
+                <span :class="item.icon" />
+                <span class="ml-2">{{ item.label }}</span>
+              </a>
+            </router-link>
+            <a v-else v-ripple :href="item.url" :target="item.target" v-bind="props.action">
+              <span :class="item.icon" />
+              <span class="ml-2">{{ item.label }}</span>
+              <span v-if="hasSubmenu" class="pi pi-fw pi-angle-down ml-2" />
+            </a>
+          </template>
+        </Menubar>
+      </div>
     </div>
-  </div>
-  <main>
-    <TabView style="width: 100%;">
-      <TabPanel v-for="view, index of views" :key="index" :header="view">
-        <keep-alive>
-          <component :is="view"></component>
-        </keep-alive>
-      </TabPanel>
-    </TabView>
+  </header>
 
+  <main>
+    <div
+      v-if="visible"
+      style="
+        display: flex;
+        width: 100%;
+        height: 600px;
+        justify-content: center;
+        align-items: center;
+        border: 1px solid #c0c0c0;
+      "
+    >
+    <img
+          :src="banner"
+          alt=""
+          width="90%"
+          height="100%"
+        />
+      <TabView style="padding: 4em;">
+        <TabPanel v-for="(view, index) of views" :key="index" :header="view">
+          <keep-alive>
+            <component :is="view"></component>
+          </keep-alive>
+        </TabPanel>
+      </TabView>
+    </div>
+
+    <div
+      v-if="!visible"
+      style="
+        display: flex;
+        width: 100%;
+        height: 600px;
+        justify-content: center;
+        border: 1px solid #c0c0c0;
+        border-radius: 1em;
+      "
+    >
+      <div
+        class="card"
+        style="display: flex; justify-content: center; align-items: center; flex-direction: row"
+      >
+        <ButtonComponent label="Авторизуйтесь" rounded @click="switching" />
+        <h4>, чтобы проверить наличие счетов</h4>
+      </div>
+    </div>
   </main>
 
-  <div class="card" style="display: flex; justify-content: space-between; flex-direction: column;">
-    <Divider align="center" type="solid">
-      <b>developed by <span style="color: #3436c0; font-weight: bold;">TOPPADEEP</span></b>
+  <div class="card" style="display: flex; justify-content: space-between; flex-direction: column">
+    <Divider align="right" type="none">
+      <b>Developed by <span style="color: #385cfd; font-weight: 400">TOPPADEEP</span></b>
     </Divider>
-    <div class="border-round border-1 surface-border p-4 surface-card">
-      <div style=" display: flex; flex-direction: row; width: 100%; justify-content: space-between; margin-bottom: 1em;">
-        <Skeleton height="1rem"></Skeleton>
-      </div>
-    </div>
   </div>
 </template>
-

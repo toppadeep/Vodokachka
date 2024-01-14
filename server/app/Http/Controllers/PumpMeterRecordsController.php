@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\PumpMeterRecords;
 use App\Http\Resources\PumpMeterRecordsResource;
 
+
 class pumpMeterRecordsController extends Controller
 {
     /**
@@ -27,22 +28,22 @@ class pumpMeterRecordsController extends Controller
      */
     public function store(Request $request)
     {
-        $pump = PumpMeterRecords::create([
-            'period_id' => $request->period_id,
-            'amount_volume' => $request->amount_volume,
+
+        $validated = validator($request->all(), [
+            'period_id' => ['required', 'unique:pump_meter_records'],
+            'amount_volume' => ['required', 'numeric', 'min:1', 'max:150']
         ]);
 
-        if ($pump) {
-            return response()->json([
-                'status' => 'success',
-                'response' => 'Показания добавлены'
-            ], 200);
+        if ($validated->fails()) {
+            return response()->json(['errors' => $validated->errors()]);
         }else {
-            return response()->json([
-                'status' => 'error',
-                'response' => 'Измените период'
+            PumpMeterRecords::create([
+                'period_id' => $request->period_id,
+                'amount_volume' => $request->amount_volume,
             ]);
-        }
+
+            return response()->json(['status' => 'success'], 201);
+        };
 
     }
 
@@ -59,18 +60,21 @@ class pumpMeterRecordsController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $pump = Pump::find($id);
+        $pump = PumpMeterRecords::find($id);
 
         if ($pump) {
-            $pump->update([
-                'period_id' => $request->period_id,
-                'amount_volume' => $request->amount_volume,
+            $validated = validator($request->all(), [
+                'amount_volume' => ['required', 'numeric', 'min:1', 'max:150']
             ]);
     
-            return response()->json([
-                'status' => 'success',
-                'response' => 'Показания обновлены'
-            ]);
+            if ($validated->fails()) {
+                return response()->json(['errors' => $validated->errors()]);
+            }else {
+                $pump->update($request->all());
+    
+                return response()->json(['status' => 'success'], 201);
+            };
+    
         }else {
             return response()->json([
                 'status' => 'error',
@@ -84,6 +88,13 @@ class pumpMeterRecordsController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $pump = PumpMeterRecords::find($id);
+
+        if (!$pump) {
+            return response()->json(['status' => 'error']);
+        }else {
+            $pump->delete();
+            return response()->json(['status' => 'success', 'response' => 'Показания удалены']);
+        }
     }
 }

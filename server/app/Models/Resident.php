@@ -11,11 +11,9 @@ class Resident extends Model
 
     public $timestamps = false;
     protected $fillable = [
-        'id',
         'fio',
         'area',
         'start_date'
     ];
-
         
 }

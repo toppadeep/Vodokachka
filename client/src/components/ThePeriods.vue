@@ -7,32 +7,29 @@ import Divider from 'primevue/divider';
 import Skeleton from 'primevue/skeleton';
 import Toast from 'primevue/toast';
 import DialogComponent from 'primevue/dialog';
+import Validation from '@/components/ErrorMessage.vue';
+import Tag from 'primevue/tag';
 
 export default {
   data() {
     return {
+      errors: [],
       loading: true,
       deleteDialog: false,
-      priodSelected: {},
+      selected: {},
       visible: false,
       periods: [],
       period: {
-        id: 'NEW',
+        id: '',
         begin_date: '',
         end_date: ''
       },
-      thead: [
-        'ID',
-        'Начало периода',
-        'Конец периода',
-        'Название периода',
-        'Действия'
-      ]
+      editingRows: []
     }
   },
   async mounted() {
-    await this.getPeriods();
-    this.loading = false;
+    await this.getPeriods()
+    this.loading = false
   },
   components: {
     DataTable,
@@ -42,6 +39,8 @@ export default {
     Skeleton,
     Toast,
     DialogComponent,
+    Validation,
+    Tag
   },
   methods: {
     async getPeriods() {
@@ -53,7 +52,7 @@ export default {
       if (request.status == 'success') {
         this.periods = request.periods
       } else {
-        console.log('Happend some error')
+        this.$toast.add({ severity: 'warning', detail: 'Bad Request', life: 3000 })
       }
     },
     async createPeriod() {
@@ -68,53 +67,68 @@ export default {
 
       const request = await response.json()
       if (request.status == 'success') {
-        this.periods.push(this.period);
-        this.visible = !this.visible;
-        this.$toast.add({ severity: 'success', summary: 'Успешно', detail: request.response, life: 3000 });
+        this.periods.push(this.period)
+        this.visible = !this.visible
+        this.$toast.add({
+          severity: 'success',
+          summary: 'Успешно',
+          detail: request.response,
+          life: 3000
+        })
       } else {
-        this.$toast.add({ severity: 'warning', detail: 'Дачник не добавлен', life: 3000 });
+        this.errors = request.errors
+        this.$toast.add({ severity: 'error', detail: 'Дачник не добавлен', life: 3000 })
       }
     },
     async onRowEditSave(event) {
-      let { newData } = event;
-      const period = new FormData();
-      period.append('begin_date', newData.begin_date);
-      period.append('end_date', newData.end_date);
-  
+      let { newData } = event
+      const period = new FormData()
+      period.append('begin_date', newData.begin_date)
+      period.append('end_date', newData.end_date)
 
-      const response = await fetch((`http://127.0.0.1:8000/api/period/${newData.id}`), {
-        method: 'PUT',
+      const response = await fetch(`http://127.0.0.1:8000/api/period/update/${newData.id}`, {
+        method: 'POST',
         body: period
       })
 
       const request = await response.json()
 
       if (request.status == 'success') {
-        this.periods.push(this.period);
-        this.$toast.add({ severity: 'success', summary: 'Успешно', detail: request.response, life: 3000 });
+        this.periods.push(this.period)
+        this.$toast.add({
+          severity: 'success',
+          summary: 'Успешно',
+          detail: request.response,
+          life: 3000
+        })
       } else {
-        this.$toast.add({ severity: 'warning', detail: 'Период не добавлен', life: 3000 });
+        this.errors = request.errors
+        this.$toast.add({ severity: 'error', detail: 'Период не обновлён', life: 3000 })
       }
     },
-    confirmDeletePeriod(period) {
-      this.periodSelected = period;
-      this.deleteDialog = true;
+    confirmDelete(period) {
+      this.selected = period
+      this.deleteDialog = true
     },
     async deletePeriod(id) {
+      const response = await fetch(`http://127.0.0.1:8000/api/period/${id}`, {
+        method: 'DELETE'
+      })
 
-      const response = await fetch((`http://127.0.0.1:8000/api/period/${id}`), {
-        method: 'DELETE',
-      });
-
-      this.deleteDialog = false;
+      this.deleteDialog = false
 
       const request = await response.json()
       if (request.status == 'success') {
         const index = this.periods.indexOf(id)
-        this.periods.splice(index, 1);
-        this.$toast.add({ severity: 'success', summary: 'Успешно', detail: request.response, life: 3000 });
+        this.periods.splice(index, 1)
+        this.$toast.add({
+          severity: 'success',
+          summary: 'Успешно',
+          detail: request.response,
+          life: 3000
+        })
       } else {
-        this.$toast.add({ severity: 'error', detail: 'Период не удалён', life: 3000 });
+        this.$toast.add({ severity: 'error', detail: 'Данный период нельзя удалить', life: 3000 })
       }
     }
   }
@@ -128,32 +142,60 @@ export default {
       <Divider align="center" type="solid">
         <b>Добавление нового периода</b>
       </Divider>
-
-      <!-- <input type="datetime-local" v-model="period.begin_date" name="begin_date" /> -->
       <label for="begin_date">Начало периода</label>
-      <input type="datetime-local" name="begin_date" id="begin_date" class="p-inputtext p-input"
-        v-model="period.begin_date" value="-07:00">
-
+      <input
+        type="datetime-local"
+        name="begin_date"
+        id="begin_date"
+        min="2024-01-01T00:00"
+        max="2026-01-30T23:59"
+        class="p-inputtext p-input"
+        v-model="period.begin_date"
+        value="-07:00"
+      />
+      <Validation :errors="errors" field="begin_date" />
       <label for="end_date">Конец периода</label>
-      <input type="datetime-local" name="end_date" id="end_date" class="p-inputtext p-input" v-model="period.end_date"
-        value="-07:00">
-
-      <ButtonComponent type="submit" size="large" label="Добавить" style="width: 100%;" />
+      <input
+        type="datetime-local"
+        name="end_date"
+        id="end_date"
+        min="2024-01-01T00:00"
+        max="2026-01-30T23:59"
+        class="p-inputtext p-input"
+        v-model="period.end_date"
+        value="-07:00"
+      />
+      <Validation :errors="errors" field="end_date" />
+      <ButtonComponent type="submit" size="large" label="Добавить" style="width: 100%" />
     </form>
   </div>
   <div class="card">
     <Toast />
-    <div style="display: flex; flex: row nowrap; justify-content: space-between; align-items: center">
-      <Divider align="left" type="solid">
-        <b>Периоды</b>
-      </Divider>
-      <ButtonComponent label="Добавить" class="p-button" @click="this.visible = !this.visible" />
+    <div
+      style="
+        display: flex;
+        flex: row nowrap;
+        justify-content: end;
+        align-items: center;
+        margin-bottom: 1.5em;
+      "
+    >
+      <ButtonComponent icon="pi pi-plus" size="large" rounded @click="visible = !visible" />
     </div>
     <div class="card">
-      <DataTable :value="periods" paginator :rows="4" tableStyle="min-width: 50rem" stripedRows class="p-datatable"
+      <DataTable
+        :value="periods"
+        paginator
+        :rows="8"
+        tableStyle="min-width: 50rem"
+        stripedRows
+        class="p-datatable"
         paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"
-        currentPageReportTemplate="{first} to {last} of {totalRecords}" v-model:editingRows="editingRows" editMode="row"
-        @row-edit-save="onRowEditSave">
+        currentPageReportTemplate="{first} to {last} of {totalRecords}"
+        v-model:editingRows="editingRows"
+        editMode="row"
+        @row-edit-save="onRowEditSave"
+      >
         <Column field="id" header="ID">
           <template v-if="loading" #body>
             <Skeleton></Skeleton>
@@ -163,10 +205,36 @@ export default {
           <template v-if="loading" #body>
             <Skeleton></Skeleton>
           </template>
+          <template #editor="{ data, field }">
+            <input
+              v-model="data[field]"
+              type="datetime-local"
+              min="2024-01-01T00:00"
+              max="2025-12-30T23:59"
+              name="begin_date"
+              id="begin_date"
+              class="p-inputtext p-input"
+              style="margin: 0"
+            />
+            <Validation :errors="errors" field="begin_date" />
+          </template>
         </Column>
         <Column field="end_date" header="Конец периода">
           <template v-if="loading" #body>
             <Skeleton></Skeleton>
+          </template>
+          <template #editor="{ data, field }">
+            <input
+              v-model="data[field]"
+              type="datetime-local"
+              min="2024-01-01T00:00"
+              max="2025-12-30T23:59"
+              name="end_date"
+              id="end_date"
+              class="p-inputtext p-input"
+              style="margin: 0"
+            />
+            <Validation :errors="errors" field="end_date" />
           </template>
         </Column>
         <Column field="month" header="Период">
@@ -174,23 +242,55 @@ export default {
             <Skeleton></Skeleton>
           </template>
         </Column>
-        <Column :rowEditor="true" style="width: 10%; min-width: 8rem" bodyStyle="text-align:center"></Column>
-        <Column :exportable="false" style="min-width:8rem">
+        <Column
+          :rowEditor="true"
+          style="width: 10%; min-width: 8rem"
+          bodyStyle="text-align:center"
+          header="Редактировать"
+        ></Column>
+        <Column :exportable="false" style="min-width: 8rem" header="Удалить">
           <template #body="slotProps">
-            <ButtonComponent icon="pi pi-trash" outlined severity="danger" @click="confirmDeletePeriod(slotProps.data)" />
+            <ButtonComponent
+              v-if="slotProps.data.hasInRate == false"
+              icon="pi pi-trash"
+              text
+              severity="danger"
+              @click="confirmDelete(slotProps.data)"
+            />
+            <Tag v-else severity="warning" value="В тарифе"></Tag>
           </template>
         </Column>
       </DataTable>
     </div>
   </div>
-  <DialogComponent v-model:visible="deleteDialog" :style="{ width: '450px' }" header="Подтверждение" :modal="true">
+  <DialogComponent
+    v-model:visible="deleteDialog"
+    :style="{ width: '450px' }"
+    header="Подтверждение"
+    :modal="true"
+  >
     <div class="confirmation-content">
-      <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
-      <span v-if="periodSelected">Вы хотите удалить <b>{{ periodSelected.month }}</b>?</span>
+      <span v-if="selected"
+        >Вы хотите удалить <b>{{ selected.month }}</b
+        >?</span
+      >
     </div>
     <template #footer>
-      <ButtonComponent label="Нет" icon="pi pi-times" text @click="deleteDialog = false" />
-      <ButtonComponent label="Да" icon="pi pi-check" text @click="deletePeriod(periodSelected.id)" />
+      <ButtonComponent
+        style="margin-right: 1em"
+        label="Да"
+        severity="success"
+        outlined
+        icon="pi pi-check"
+        @click="deletePeriod(selected.id)"
+      />
+      <ButtonComponent
+        label="Нет"
+        severity="danger"
+        outlined
+        icon="pi pi-times"
+        @click="deleteDialog = false"
+      />
     </template>
   </DialogComponent>
 </template>

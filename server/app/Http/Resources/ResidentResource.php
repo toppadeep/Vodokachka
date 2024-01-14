@@ -18,7 +18,7 @@ class ResidentResource extends JsonResource
        
         $currentDate = Carbon::now();
         $connectStartDate = Carbon::parse($this->start_date);
-        $start_date = $connectStartDate->translatedFormat('d F Y H:i');
+        $start_date = $connectStartDate->format('Y-m-d\Th:i:s');
         $diffDateConnected = $currentDate->diffForHumans($connectStartDate);
         
         

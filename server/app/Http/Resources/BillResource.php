@@ -20,14 +20,17 @@ class BillResource extends JsonResource
         $begin_date = Carbon::parse(Resident::find($this->resident_id)->start_date)->translatedFormat('d F, Y, H:i');
         $end_date = Carbon::parse(Period::find($this->period_id)->end_date)->translatedFormat('d F, Y, H:i');
         $month = Carbon::parse(Period::find($this->period_id)->end_date)->translatedFormat('F, Y');
-
+        $resident_id = Resident::find($this->resident_id)->fio;
+        $period_id = Period::find($this->period_id)->id;
+        
         return [
             'id' => $this->id,
-            'resident_id' => Resident::find($this->resident_id)->fio,
+            'resident_id' => $resident_id,
+            'period_id' => $period_id,
             'period_start' => $begin_date,
             'period_end' => $end_date,
             'amount_rub' => $this->amount_rub,
-            'month' => $month
+            'month' => $month,
         ];
     }
 }

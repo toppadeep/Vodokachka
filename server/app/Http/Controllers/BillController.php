@@ -17,7 +17,7 @@ class BillController extends Controller
         $bills = BillResource::collection(Bill::all());
 
         return response()->json([
-            'status' => true,
+            'status' => 'success',
             'bills' => $bills,
         ]);
     }
@@ -35,16 +35,25 @@ class BillController extends Controller
      */
     public function store(Request $request)
     {
-        Bill::create([
-            'resident_id' => $request->resident_id,
-            'period_id' => $request->period_id,
-            'amount_rub' => $request->amount_rub,
+
+        $validated = validator($request->all(), [
+            'resident_id' => ['required', 'integer'],
+            'period_id' => ['required', 'integer'],
+            'amount_rub' => ['required', 'min:1', 'max:100000'],
         ]);
 
-        return response()->json([
-            'status' => 'success',
-            'response' => 'Счёт сформирован'
+       if ($validated->fails()) {
+            return response()->json(['errors'=>$validated->errors()]);
+       }else {
+        Bill::create([
+            "resident_id" => $request->resident_id,
+            "period_id" => $request->period_id,
+            "amount_rub" => $request->amount_rub,
         ]);
+
+        return response()->json(['status' => 'success'], 201);
+       }
+
     }
 
     /**
@@ -71,16 +80,19 @@ class BillController extends Controller
         $bill = Bill::find($id);
 
         if ($bill) {
-            $bill->update([
-                'resident_id' => $request->resident_id,
-                'period_id' => $request->period_id,
-                'amount_rub' => $request->amount_rub,
+            $validated = validator($request->all(), [
+                "period_id" => ['nullable', 'integer'],
+                "amount_rub" => ['nullable', 'numeric', 'min:1', 'max:100000'],
             ]);
     
-            return response()->json([
-                'status' => 'success',
-                'response' => 'Данные обновлены'
-            ]);
+            if ($validated->fails()) {
+                return response()->json(['errors' => $validated->errors()], 422);
+            }else {
+    
+                $bill->update($request->all());
+        
+                return response()->json(['status' => 'success'], 200);
+            }
         }else {
             return response()->json([
                 'status' => 'error',
@@ -94,6 +106,28 @@ class BillController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+
+        try {
+            $bill = Bill::find($id);
+
+            if ($bill) {
+                $bill->delete();
+        
+                return response()->json([
+                    'status' => 'success',
+                    'response' => 'Счёт удалён'
+                ]);
+            }else {
+                return response()->json([
+                    'status' => 'error', 
+                    'response' => 'Счёт не найден'
+                ]);
+            };
+
+        }catch (QueryException $e) {
+
+            return response()->json($e);
+    
+        };
     }
 }
