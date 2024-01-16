@@ -55,7 +55,32 @@ export default {
     ...mapActions(useIndexStore, ['openDialog']),
     ...mapActions(useResidentStore, ['getResidents']),
     ...mapActions(useIndexStore, ['switchLoading']),
-    ...mapActions(useResidentStore, ['onRowEditSave']),
+    async onRowEditSave(event) {
+      let { newData } = event
+      const resident = new FormData()
+      resident.append('fio', newData.fio)
+      resident.append('area', newData.area)
+      resident.append('start_date', newData.start_date)
+
+      const response = await fetch(`http://127.0.0.1:8000/api/resident/update/${newData.id}`, {
+        method: 'POST',
+        body: resident
+      })
+
+      const request = await response.json()
+
+      if (request.status == 'success') {
+        this.$toast.add({
+          severity: 'success',
+          summary: 'Успешно',
+          detail: request.response,
+          life: 3000
+        })
+      } else {
+        this.errors = request.errors
+        this.$toast.add({ severity: 'error', detail: 'Данные не обновлены', life: 3000 })
+      }
+    },
     async createResidend() {
       const resident = new FormData()
       resident.append('fio', this.resident.fio)
@@ -101,7 +126,7 @@ export default {
           summary: 'Успешно',
           detail: request.response,
           life: 3000
-        })
+        });
       } else {
         this.$toast.add({ severity: 'error', detail: 'Дачник не удалён', life: 3000 })
       }
@@ -118,7 +143,7 @@ export default {
         <b>Добавление нового дачника</b>
       </Divider>
       <label for="fio">ФИО</label>
-      <InputText class="p-input" type="text" name="fio" v-model="resident.fio" />
+      <InputText class="p-input" type="text" inputId="fio" name="fio" v-model="resident.fio" />
       <Validation :errors="errors" field="fio" />
       <label for="area">Площадь огорода</label>
       <InputNumber
@@ -126,7 +151,7 @@ export default {
         v-model="resident.area"
         id="area"
         name="area"
-        inputId="minmaxfraction"
+        inputId="area"
         :minFractionDigits="2"
         :maxFractionDigits="5"
       />
@@ -137,7 +162,7 @@ export default {
         min="2024-01-01T00:00"
         max="2025-01-30T23:59"
         name="start_date"
-        id="start_date"
+        inputId="start_date"
         class="p-inputtext p-input"
         v-model="resident.start_date"
       />

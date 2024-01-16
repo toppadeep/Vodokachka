@@ -4,7 +4,8 @@ export const useIndexStore = defineStore({
   id: 'index',
   state: () => ({
     loading: true,
-    visible: false
+    visible: false,
+    errors: [],
   }),
   actions: {
     openDialog() {

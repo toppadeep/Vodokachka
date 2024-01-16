@@ -164,7 +164,7 @@ export default {
         placeholder="0.0"
         name="amount_price"
         v-model="rate.amount_price"
-        inputId="minmaxfraction"
+        inputId="amount_price"
         :minFractionDigits="2"
         :maxFractionDigits="2"
       />
@@ -249,7 +249,7 @@ export default {
             severity="danger"
             @click="confirmDelete(slotProps.data)"
           />
-          <Tag v-else severity="warning" value="В счёте"></Tag>
+          <Tag v-else-if="slotProps.data.isInBill == true" severity="warning" value="В счёте"></Tag>
         </template>
       </Column>
     </DataTable>

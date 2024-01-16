@@ -142,7 +142,7 @@ export default {
       <input
         type="datetime-local"
         name="begin_date"
-        id="begin_date"
+        inputId="begin_date"
         min="2024-01-01T00:00"
         max="2026-01-30T23:59"
         class="p-inputtext p-input"
@@ -154,7 +154,7 @@ export default {
       <input
         type="datetime-local"
         name="end_date"
-        id="end_date"
+        inputId="end_date"
         min="2024-01-01T00:00"
         max="2026-01-30T23:59"
         class="p-inputtext p-input"
@@ -253,7 +253,7 @@ export default {
               severity="danger"
               @click="confirmDelete(slotProps.data)"
             />
-            <Tag v-else severity="warning" value="В тарифе"></Tag>
+            <Tag v-else-if="slotProps.data.hasInRate == true" severity="warning" value="В тарифе"></Tag>
           </template>
         </Column>
       </DataTable>

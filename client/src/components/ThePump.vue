@@ -164,7 +164,7 @@ export default {
         min="1"
         name="amount_volume"
         v-model="pump.amount_volume"
-        inputId="minmaxfraction"
+        inputId="amount_volume"
         :minFractionDigits="2"
         :maxFractionDigits="2"
       />

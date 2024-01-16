@@ -10,7 +10,7 @@ import Banner from '../assets/banner.jpg'
 import ButtonComponent from 'primevue/button'
 import Menubar from 'primevue/menubar'
 import LogIn from '@/components/logIn.vue'
-import SingIn from '@/components/singIn.vue'
+import SingUp from '@/components/singUp.vue'
 import TabView from 'primevue/tabview'
 import TabPanel from 'primevue/tabpanel'
 
@@ -30,17 +30,7 @@ export default {
           route: '/'
         },
         {
-          label: 'Тарифы',
-          icon: 'pi pi-server',
-          route: '/'
-        },
-        {
-          label: 'О нас',
-          icon: 'pi pi-envelope',
-          route: '/'
-        },
-        {
-          label: 'Админка',
+          label: 'Панель',
           icon: 'pi pi-envelope',
           route: '/admin'
         }
@@ -49,26 +39,14 @@ export default {
       views: ['Регистрация', 'Вход']
     }
   },
-  async mounted() {
-    await this.getBills()
-    this.loading = false
-  },
   methods: {
     switching() {
       this.visible = !this.visible
     },
-    async getBills() {
-      const response = await fetch('http://127.0.0.1:8000/api/bill', {
-        method: 'GET'
-      })
-
-      const request = await response.json()
-      this.bills = request.bills
-    }
   },
   components: {
-    Регистрация: LogIn,
-    Вход: SingIn,
+    Регистрация: SingUp,
+    Вход: LogIn,
     Skeleton,
     InputText,
     InputNumber,
@@ -135,7 +113,7 @@ export default {
         display: flex;
         width: 100%;
         height: 600px;
-        justify-content: center;
+        justify-content: space-between;
         align-items: center;
         border: 1px solid #c0c0c0;
       "
@@ -143,11 +121,11 @@ export default {
     <img
           :src="banner"
           alt=""
-          width="90%"
+          width="50%"
           height="100%"
         />
-      <TabView style="padding: 4em;">
-        <TabPanel v-for="(view, index) of views" :key="index" :header="view">
+      <TabView  style="padding: 4em; width: 50%;">
+        <TabPanel  v-for="(view, index) of views" :key="index" :header="view">
           <keep-alive>
             <component :is="view"></component>
           </keep-alive>

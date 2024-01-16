@@ -263,7 +263,7 @@ export default {
         type="number"
         name="amount_rub"
         v-model="bill.amount_rub"
-        inputId="minmaxfraction"
+        inputId="amount_rub"
         :minFractionDigits="2"
         :maxFractionDigits="2"
       />
