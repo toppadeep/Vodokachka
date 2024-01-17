@@ -33,8 +33,8 @@ export default {
     ...mapState(useIndexStore, ['loading'])
   },
   async mounted() {
-    await this.getPeriods();
-    await this.switchLoading();
+    await this.getPeriods()
+    await this.switchLoading()
   },
   components: {
     DataTable,
@@ -56,15 +56,15 @@ export default {
       period.append('begin_date', this.period.begin_date)
       period.append('end_date', this.period.end_date)
 
-      const response = await fetch('http://127.0.0.1:8000/api/period', {
+      const response = await fetch('http://localhost:8000/api/period', {
         method: 'POST',
         body: period
-      });
+      })
 
       const request = await response.json()
       if (request.status == 'success') {
         this.periods.push(this.period)
-        this.openDialog();
+        this.openDialog()
         this.$toast.add({
           severity: 'success',
           summary: 'Успешно',
@@ -82,7 +82,7 @@ export default {
       period.append('begin_date', newData.begin_date)
       period.append('end_date', newData.end_date)
 
-      const response = await fetch(`http://127.0.0.1:8000/api/period/update/${newData.id}`, {
+      const response = await fetch(`http://localhost:8000/api/period/update/${newData.id}`, {
         method: 'POST',
         body: period
       })
@@ -107,7 +107,7 @@ export default {
       this.deleteDialog = true
     },
     async deletePeriod(id) {
-      const response = await fetch(`http://127.0.0.1:8000/api/period/${id}`, {
+      const response = await fetch(`http://localhost:8000/api/period/${id}`, {
         method: 'DELETE'
       })
 
@@ -253,7 +253,11 @@ export default {
               severity="danger"
               @click="confirmDelete(slotProps.data)"
             />
-            <Tag v-else-if="slotProps.data.hasInRate == true" severity="warning" value="В тарифе"></Tag>
+            <Tag
+              v-else-if="slotProps.data.hasInRate == true"
+              severity="warning"
+              value="В тарифе"
+            ></Tag>
           </template>
         </Column>
       </DataTable>

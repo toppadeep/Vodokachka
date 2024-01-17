@@ -44,9 +44,9 @@ class ResidentController extends Controller
         ]);
 
        if ($validated->fails()) {
-            return response()->json(['errors'=>$validated->errors()]);
+            return response()->json(['errors'=>$validated->errors()], 422);
        }else {
-            Resident::create([
+            $resident = Resident::create([
             "fio" => $request->fio,
             "area" => $request->area,
             "start_date" => $request->start_date

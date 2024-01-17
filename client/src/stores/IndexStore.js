@@ -1,4 +1,6 @@
-import { defineStore } from 'pinia'
+import {
+  defineStore
+} from 'pinia'
 
 export const useIndexStore = defineStore({
   id: 'index',
@@ -14,5 +16,5 @@ export const useIndexStore = defineStore({
     switchLoading() {
       this.loading = false
     }
-  }
+  },
 })

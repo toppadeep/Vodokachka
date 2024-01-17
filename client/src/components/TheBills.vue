@@ -102,8 +102,8 @@ export default {
     Validation
   },
   async mounted() {
-    await this.getBills();
-    await this.switchLoading();
+    await this.getBills()
+    await this.switchLoading()
   },
   methods: {
     ...mapActions(useIndexStore, ['openDialog']),
@@ -121,7 +121,7 @@ export default {
       bill.append('period_id', this.period.id)
       bill.append('amount_rub', this.bill.amount_rub)
 
-      const response = await fetch('http://127.0.0.1:8000/api/bill', {
+      const response = await fetch('http://localhost:8000/api/bill', {
         method: 'POST',
         body: bill
       })
@@ -130,7 +130,7 @@ export default {
 
       if (request.status == 'success') {
         this.bills.push(this.bill)
-        this.openDialog();
+        this.openDialog()
         this.$toast.add({
           severity: 'success',
           summary: 'Успешно',
@@ -148,7 +148,7 @@ export default {
       bill.append('period_id', newData.period_id)
       bill.append('amount_rub', newData.amount_rub)
 
-      const response = await fetch(`http://127.0.0.1:8000/api/bill/update/${newData.id}`, {
+      const response = await fetch(`http://localhost:8000/api/bill/update/${newData.id}`, {
         method: 'POST',
         body: bill
       })
@@ -172,7 +172,7 @@ export default {
       this.deleteDialog = true
     },
     async deleteBill(id) {
-      const response = await fetch(`http://127.0.0.1:8000/api/bill/${id}`, {
+      const response = await fetch(`http://localhost:8000/api/bill/${id}`, {
         method: 'DELETE'
       })
 

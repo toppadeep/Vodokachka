@@ -1,13 +1,18 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import {
+  createRouter,
+  createWebHistory
+} from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 
 import pinia from "@/stores/store.js";
-import { useUserStore } from '@/stores/UserStore'
+import {
+  useUserStore
+} from '@/stores/UserStore'
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
-  routes: [
-    {
+  history: createWebHistory(
+    import.meta.env.BASE_URL),
+  routes: [{
       path: '/',
       name: 'home',
       component: HomeView
@@ -26,14 +31,11 @@ const router = createRouter({
   ]
 })
 
-const UserStore = useUserStore(pinia );
-console.log(UserStore.isAuthenticated)
-router.beforeEach((to, from) => {
-  if (to.meta.requiresAuth && !UserStore.isAuthenticated) {
-    return {
-      name: 'home'
-    }
-  }
+const userStore = useUserStore(pinia );
+const isAuthenticated = userStore.isAuthenticated;
+router.beforeEach((to, from, next) => {
+  if (to.name !== 'home' && !isAuthenticated) next({ name: 'home' })
+  else next()
 })
 
 

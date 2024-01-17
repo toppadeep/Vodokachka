@@ -38,8 +38,8 @@ export default {
     ...mapState(usePeriodStore, ['periods'])
   },
   async mounted() {
-    await this.getRates();
-    await this.switchLoading();
+    await this.getRates()
+    await this.switchLoading()
   },
   components: {
     DataTable,
@@ -65,15 +65,16 @@ export default {
       rate.append('period_id', this.period.id)
       rate.append('amount_price', this.rate.amount_price)
 
-      const response = await fetch('http://127.0.0.1:8000/api/rate', {
+      const response = await fetch('http://localhost:8000/api/rate', {
         method: 'POST',
-        body: rate
+        body: rate,
+        credentials: 'include'
       })
 
       const request = await response.json()
       if (request.status == 'success') {
         this.rates.push(this.rate)
-        this.openDialog();
+        this.openDialog()
         this.$toast.add({
           severity: 'success',
           summary: 'Успешно',
@@ -91,7 +92,7 @@ export default {
       rate.append('period_id', newData.period_id.id)
       rate.append('amount_price', newData.amount_price)
 
-      const response = await fetch(`http://127.0.0.1:8000/api/rate/update/${newData.id}`, {
+      const response = await fetch(`http://localhost:8000/api/rate/update/${newData.id}`, {
         method: 'POST',
         body: rate
       })
@@ -115,7 +116,7 @@ export default {
       this.deleteDialog = true
     },
     async deleteRate(id) {
-      const response = await fetch(`http://127.0.0.1:8000/api/rate/${id}`, {
+      const response = await fetch(`http://localhost:8000/api/rate/${id}`, {
         method: 'DELETE'
       })
 

@@ -33,11 +33,11 @@ export default {
   computed: {
     ...mapState(useIndexStore, ['visible']),
     ...mapState(useResidentStore, ['residents']),
-    ...mapState(useIndexStore, ['loading']),
+    ...mapState(useIndexStore, ['loading'])
   },
   async mounted() {
-    await this.getResidents();
-    await this.switchLoading();
+    await this.getResidents()
+    await this.switchLoading()
   },
   components: {
     DataTable,
@@ -62,7 +62,7 @@ export default {
       resident.append('area', newData.area)
       resident.append('start_date', newData.start_date)
 
-      const response = await fetch(`http://127.0.0.1:8000/api/resident/update/${newData.id}`, {
+      const response = await fetch(`http://localhost:8000/api/resident/update/${newData.id}`, {
         method: 'POST',
         body: resident
       })
@@ -87,7 +87,7 @@ export default {
       resident.append('area', this.resident.area)
       resident.append('start_date', this.resident.start_date)
 
-      const response = await fetch('http://127.0.0.1:8000/api/resident', {
+      const response = await fetch('http://localhost:8000/api/resident', {
         method: 'POST',
         body: resident
       })
@@ -95,12 +95,12 @@ export default {
       const request = await response.json()
 
       if (request.status == 'success') {
-        this.residents.push(this.resident);
-        this.openDialog();
+        this.residents.push(this.resident)
+        this.openDialog()
         this.$toast.add({
           severity: 'success',
           summary: 'Успешно',
-          detail: request.response,
+          detail: 'Создано',
           life: 3000
         })
       } else {
@@ -113,20 +113,19 @@ export default {
       this.deleteDialog = true
     },
     async deleteResident(id) {
-      const response = await fetch(`http://127.0.0.1:8000/api/resident/${id}`, {
-        method: 'DELETE'
-      })
+      await axios.get('http://localhost:8000/sanctum/csrf-cookie')
+
+      const { data } = await axios.delete(`http://localhost:8000/api/resident/${id}`)
 
       this.deleteDialog = false
 
-      const request = await response.json()
-      if (request.status == 'success') {
+      if (data.status == 'success') {
         this.$toast.add({
           severity: 'success',
           summary: 'Успешно',
           detail: request.response,
           life: 3000
-        });
+        })
       } else {
         this.$toast.add({ severity: 'error', detail: 'Дачник не удалён', life: 3000 })
       }
@@ -293,4 +292,3 @@ export default {
     </template>
   </DialogComponent>
 </template>
-@/stores/Store

@@ -63,7 +63,7 @@ export default {
       pump.append('period_id', this.period.id)
       pump.append('amount_volume', this.pump.amount_volume)
 
-      const response = await fetch('http://127.0.0.1:8000/api/pump', {
+      const response = await fetch('http://localhost:8000/api/pump', {
         method: 'POST',
         body: pump
       })
@@ -91,7 +91,7 @@ export default {
       const pump = new FormData()
       pump.append('amount_volume', newData.amount_volume)
 
-      const response = await fetch(`http://127.0.0.1:8000/api/pump/update/${newData.id}`, {
+      const response = await fetch(`http://localhost:8000/api/pump/update/${newData.id}`, {
         method: 'POST',
         body: pump
       })
@@ -115,7 +115,7 @@ export default {
       this.deleteDialog = true
     },
     async deletePump(id) {
-      const response = await fetch(`http://127.0.0.1:8000/api/pump/${id}`, {
+      const response = await fetch(`http://localhost:8000/api/pump/${id}`, {
         method: 'DELETE'
       })
 

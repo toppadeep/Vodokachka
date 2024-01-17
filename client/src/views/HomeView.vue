@@ -13,13 +13,11 @@ import LogIn from '@/components/logIn.vue'
 import SingUp from '@/components/singUp.vue'
 import TabView from 'primevue/tabview'
 import TabPanel from 'primevue/tabpanel'
-
+import { mapState } from 'pinia'
+import { useUserStore } from '@/stores/UserStore'
 export default {
   data() {
     return {
-      bills: [],
-      loading: true,
-      errors: [],
       visible: false,
       logo: Logo,
       banner: Banner,
@@ -38,6 +36,9 @@ export default {
       view: 'Регистрация',
       views: ['Регистрация', 'Вход']
     }
+  },
+  computed: {
+    ...mapState(useUserStore, ['isAuthenticated'])
   },
   methods: {
     switching() {
@@ -75,7 +76,6 @@ export default {
           flex-direction: row;
           border-radius: 1em 2em 0 0;
           margin-top: 2em;
-          background-color: #385cfd98;
         "
       >
         <img
@@ -134,7 +134,7 @@ export default {
     </div>
 
     <div
-      v-if="!visible"
+      v-if="isAuthenticated"
       style="
         display: flex;
         width: 100%;
