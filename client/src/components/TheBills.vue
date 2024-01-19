@@ -23,13 +23,10 @@ export default {
   data() {
     return {
       errors: [],
-      selected: {},
+      loading: true,
       deleteDialog: false,
-      currentMonth: null,
-      periodsData: [],
       resident: {},
-      period: {},
-      resident_names: [],
+      period: '',
       bill: {
         id: null,
         resident_id: null,
@@ -39,13 +36,11 @@ export default {
       },
       filters: {
         month: { value: null, matchMode: FilterMatchMode.EQUALS }
-      },
-      editingRows: []
+      }
     }
   },
   computed: {
     ...mapState(useIndexStore, ['visible']),
-    ...mapState(useIndexStore, ['loading']),
     ...mapState(useBillStore, ['bills']),
     ...mapState(useResidentStore, ['residents']),
     ...mapState(useRateStore, ['rates']),
@@ -85,8 +80,9 @@ export default {
         this.priceForCurrentPeriod
       ).toFixed(2)
     },
-    currentPeriodbills: function () {
-      return this.bills.filter((bill) => bill.period_id == this.period.currentMonth)
+    isMonths: function () {
+      let result = this.bills.map((bill) => bill.month)
+      return result
     }
   },
   components: {
@@ -112,8 +108,11 @@ export default {
     ...mapActions(usePumpStore, ['getPumps']),
     ...mapActions(usePeriodStore, ['getPeriods']),
     ...mapActions(useRateStore, ['getRates']),
-    ...mapActions(useIndexStore, ['switchLoading']),
-
+    switchLoading() {
+      setTimeout(() => {
+        this.loading = false
+      }, 1000)
+    },
     async createBill() {
       const bill = new FormData()
 
@@ -129,7 +128,6 @@ export default {
       const request = await response.json()
 
       if (request.status == 'success') {
-        this.bills.push(this.bill)
         this.openDialog()
         this.$toast.add({
           severity: 'success',
@@ -137,34 +135,10 @@ export default {
           detail: request.response,
           life: 3000
         })
+        this.getBills()
       } else {
         this.errors = request.errors
         this.$toast.add({ severity: 'error', detail: 'Дачник не добавлен', life: 3000 })
-      }
-    },
-    async onRowEditSave(event) {
-      let { newData } = event
-      const bill = new FormData()
-      bill.append('period_id', newData.period_id)
-      bill.append('amount_rub', newData.amount_rub)
-
-      const response = await fetch(`http://localhost:8000/api/bill/update/${newData.id}`, {
-        method: 'POST',
-        body: bill
-      })
-
-      const request = await response.json()
-
-      if (request.status == 'success') {
-        this.$toast.add({
-          severity: 'success',
-          summary: 'Успешно',
-          detail: request.response,
-          life: 3000
-        })
-      } else {
-        this.errors = request.errors
-        this.$toast.add({ severity: 'error', detail: 'Данные не обновлены', life: 3000 })
       }
     },
     confirmDelete(bill) {
@@ -172,26 +146,22 @@ export default {
       this.deleteDialog = true
     },
     async deleteBill(id) {
-      const response = await fetch(`http://localhost:8000/api/bill/${id}`, {
-        method: 'DELETE'
-      })
-
-      this.deleteDialog = false
-
-      const request = await response.json()
-      if (request.status == 'success') {
-        const index = this.bills.indexOf(id)
-        this.bills.splice(index, 1)
-        this.$toast.add({
-          severity: 'success',
-          summary: 'Успешно',
-          detail: request.response,
-          life: 3000
+      await this.axios.get('http://localhost:8000/sanctum/csrf-cookie')
+      await this.axios
+        .delete(`http://localhost:8000/api/bill/${id}`)
+        .then((response) => {
+          this.deleteDialog = false
+          this.$toast.add({
+            severity: 'success',
+            summary: 'Успешно',
+            detail: response.data.response,
+            life: 3000
+          })
+          this.getBills()
         })
-      } else {
-        this.errors = request.errors
-        this.$toast.add({ severity: 'error', detail: 'Счёт не исполнен', life: 3000 })
-      }
+        .catch(() => {
+          this.$toast.add({ severity: 'error', detail: 'Счёт не удалён', life: 3000 })
+        })
     }
   }
 }
@@ -287,18 +257,13 @@ export default {
     <DataTable
       v-model:filters="filters"
       filterDisplay="row"
-      :globalFilterFields="['month']"
       :value="bills"
       paginator
       :rows="8"
-      stripedRows
       tableStyle="min-width: 50rem"
       class="p-datatable"
       paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"
       currentPageReportTemplate="{first} to {last} of {totalRecords}"
-      v-model:editingRows="editingRows"
-      editMode="row"
-      @row-edit-save="onRowEditSave"
     >
       <Column field="id" sortable header="ID"> </Column>
       <Column field="resident_id" header="Дачник">
@@ -319,45 +284,18 @@ export default {
           <Dropdown
             v-model="filterModel.value"
             @change="filterCallback()"
-            :options="periods"
+            :options="isMonths"
             placeholder="Выберите период"
-          >
-          </Dropdown>
-        </template>
-        <template #editor="{ data, field }">
-          <Dropdown
-            v-model="data[field]"
-            inputId="period_id"
-            placeholder="Выберите период"
-            :options="periods"
-            optionLabel="month"
+            style="min-width: 12rem"
+            :showClear="false"
           />
-          <Validation :errors="errors" field="period_id" />
         </template>
       </Column>
       <Column field="amount_rub" sortable header="Сумма к оплате">
         <template v-if="loading" #body>
           <Skeleton></Skeleton>
         </template>
-        <template #editor="{ data, field }">
-          <InputNumber
-            class="p-input"
-            type="number"
-            name="amount_rub"
-            v-model="data[field]"
-            inputId="minmaxfraction"
-            :minFractionDigits="2"
-            :maxFractionDigits="2"
-          />
-          <Validation :errors="errors" field="amount_rub" />
-        </template>
       </Column>
-      <Column
-        :rowEditor="true"
-        style="width: 10%; min-width: 8rem"
-        bodyStyle="text-align:center"
-        header="Редактировать"
-      ></Column>
       <Column :exportable="false" style="min-width: 8rem" header="Удалить">
         <template #body="slotProps">
           <ButtonComponent
@@ -398,4 +336,4 @@ export default {
     </template>
   </DialogComponent>
 </template>
-@/stores/Store
+

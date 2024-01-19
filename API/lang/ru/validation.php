@@ -166,6 +166,9 @@ return [
         'amount_volume' => 'показания счётчика',
         'amount_price' => 'стоимость',
         'amount_rub' => 'итого',
-        
+        'name' => 'имя',
+        'email' => 'почта',
+        'password' => 'пароль',
+        'password_confirmation' => 'подтверждение пароля'
     ],
 ];

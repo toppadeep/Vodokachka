@@ -20,6 +20,7 @@ export default {
   data() {
     return {
       errors: [],
+      loading: true,
       selected: {},
       deleteDialog: false,
       period: {},
@@ -34,12 +35,11 @@ export default {
   computed: {
     ...mapState(useIndexStore, ['visible']),
     ...mapState(useRateStore, ['rates']),
-    ...mapState(useIndexStore, ['loading']),
     ...mapState(usePeriodStore, ['periods'])
   },
   async mounted() {
-    await this.getRates()
-    await this.switchLoading()
+    await this.getRates();
+    await this.switchLoading();
   },
   components: {
     DataTable,
@@ -58,7 +58,11 @@ export default {
     ...mapActions(useIndexStore, ['openDialog']),
     ...mapActions(useRateStore, ['getRates']),
     ...mapActions(usePeriodStore, ['getPeriods']),
-    ...mapActions(useIndexStore, ['switchLoading']),
+    switchLoading() {
+      setTimeout(() => {
+        this.loading = false
+      }, 1000)
+    },
     async createRate() {
       const rate = new FormData()
 
@@ -73,14 +77,14 @@ export default {
 
       const request = await response.json()
       if (request.status == 'success') {
-        this.rates.push(this.rate)
         this.openDialog()
         this.$toast.add({
           severity: 'success',
           summary: 'Успешно',
           detail: request.response,
           life: 3000
-        })
+        });
+        this.getRates();
       } else {
         this.errors = request.errors
         this.$toast.add({ severity: 'error', detail: 'Дачник не добавлен', life: 3000 })
@@ -105,7 +109,8 @@ export default {
           summary: 'Успешно',
           detail: request.response,
           life: 3000
-        })
+        });
+        this.getRates();
       } else {
         this.errors = request.errors
         this.$toast.add({ severity: 'error', detail: 'Данные не обновлены', life: 3000 })
@@ -116,26 +121,22 @@ export default {
       this.deleteDialog = true
     },
     async deleteRate(id) {
-      const response = await fetch(`http://localhost:8000/api/rate/${id}`, {
-        method: 'DELETE'
-      })
-
-      this.deleteDialog = false
-
-      const request = await response.json()
-      if (request.status == 'success') {
-        const index = this.rates.indexOf(id)
-        this.rates.splice(index, 1)
-        this.$toast.add({
-          severity: 'success',
-          summary: 'Успешно',
-          detail: request.response,
-          life: 3000
+      await this.axios.get('http://localhost:8000/sanctum/csrf-cookie')
+      await this.axios
+        .delete(`http://localhost:8000/api/rate/${id}`)
+        .then((response) => {
+          this.deleteDialog = false
+          this.$toast.add({
+            severity: 'success',
+            summary: 'Успешно',
+            detail: response.data.response,
+            life: 3000
+          })
+          this.getRates()
         })
-      } else {
-        this.errors = request.errors
-        this.$toast.add({ severity: 'error', detail: 'Тариф не удалён', life: 3000 })
-      }
+        .catch(() => {
+          this.$toast.add({ severity: 'error', detail: 'Тариф не удалён', life: 3000 })
+        })
     }
   }
 }

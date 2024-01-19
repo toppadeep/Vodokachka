@@ -18,6 +18,7 @@ export default {
   data() {
     return {
       errors: [],
+      loading: true,
       deleteDialog: false,
       selected: {},
       resident: {
@@ -32,8 +33,7 @@ export default {
   },
   computed: {
     ...mapState(useIndexStore, ['visible']),
-    ...mapState(useResidentStore, ['residents']),
-    ...mapState(useIndexStore, ['loading'])
+    ...mapState(useResidentStore, ['residents'])
   },
   async mounted() {
     await this.getResidents()
@@ -55,6 +55,11 @@ export default {
     ...mapActions(useIndexStore, ['openDialog']),
     ...mapActions(useResidentStore, ['getResidents']),
     ...mapActions(useIndexStore, ['switchLoading']),
+    switchLoading() {
+      setTimeout(() => {
+        this.loading = false
+      }, 1000)
+    },
     async onRowEditSave(event) {
       let { newData } = event
       const resident = new FormData()
@@ -76,6 +81,7 @@ export default {
           detail: request.response,
           life: 3000
         })
+        this.getResidents()
       } else {
         this.errors = request.errors
         this.$toast.add({ severity: 'error', detail: 'Данные не обновлены', life: 3000 })
@@ -95,7 +101,6 @@ export default {
       const request = await response.json()
 
       if (request.status == 'success') {
-        this.residents.push(this.resident)
         this.openDialog()
         this.$toast.add({
           severity: 'success',
@@ -103,6 +108,7 @@ export default {
           detail: 'Создано',
           life: 3000
         })
+        this.getResidents()
       } else {
         this.errors = request.errors
         this.$toast.add({ severity: 'error', detail: 'Дачник не добавлен', life: 3000 })
@@ -113,22 +119,22 @@ export default {
       this.deleteDialog = true
     },
     async deleteResident(id) {
-      await axios.get('http://localhost:8000/sanctum/csrf-cookie')
-
-      const { data } = await axios.delete(`http://localhost:8000/api/resident/${id}`)
-
-      this.deleteDialog = false
-
-      if (data.status == 'success') {
-        this.$toast.add({
-          severity: 'success',
-          summary: 'Успешно',
-          detail: request.response,
-          life: 3000
+      await this.axios.get('http://localhost:8000/sanctum/csrf-cookie')
+      await this.axios
+        .delete(`http://localhost:8000/api/resident/${id}`)
+        .then((response) => {
+          this.deleteDialog = false
+          this.$toast.add({
+            severity: 'success',
+            summary: 'Успешно',
+            detail: response.data.response,
+            life: 3000
+          })
+          this.getResidents()
         })
-      } else {
-        this.$toast.add({ severity: 'error', detail: 'Дачник не удалён', life: 3000 })
-      }
+        .catch(() => {
+          this.$toast.add({ severity: 'error', detail: 'Дачник не удалён', life: 3000 })
+        })
     }
   }
 }

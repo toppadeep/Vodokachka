@@ -5,45 +5,38 @@ import Toast from 'primevue/toast'
 import Validation from '@/components/ErrorMessage.vue'
 import Skeleton from 'primevue/skeleton'
 import Divider from 'primevue/divider'
-import Logo from '../assets/logo2.jpg'
-import Banner from '../assets/banner.jpg'
+import Banner from '@/assets/logo.jpg'
 import ButtonComponent from 'primevue/button'
 import Menubar from 'primevue/menubar'
 import LogIn from '@/components/logIn.vue'
 import SingUp from '@/components/singUp.vue'
 import TabView from 'primevue/tabview'
 import TabPanel from 'primevue/tabpanel'
-import { mapState } from 'pinia'
-import { useUserStore } from '@/stores/UserStore'
+import BreadCrumbs from '@/components/BreadCrumbs.vue'
+
 export default {
   data() {
     return {
       visible: false,
-      logo: Logo,
       banner: Banner,
-      items: [
-        {
-          label: 'Главная',
-          icon: 'pi pi-home',
-          route: '/'
-        },
-        {
-          label: 'Панель',
-          icon: 'pi pi-envelope',
-          route: '/admin'
-        }
-      ],
-      view: 'Регистрация',
-      views: ['Регистрация', 'Вход']
+      view: 'Вход',
+      views: ['Вход', 'Регистрация']
     }
   },
   computed: {
-    ...mapState(useUserStore, ['isAuthenticated'])
+    isAuthenticated() {
+      const status = JSON.parse(localStorage.getItem('isAuthenticated'))
+      if (status) {
+        return true
+      } else {
+        return false
+      }
+    }
   },
   methods: {
     switching() {
       this.visible = !this.visible
-    },
+    }
   },
   components: {
     Регистрация: SingUp,
@@ -57,75 +50,31 @@ export default {
     ButtonComponent,
     Menubar,
     TabView,
-    TabPanel
+    TabPanel,
+    BreadCrumbs
   }
 }
 </script>
 
 <template>
   <header>
-    <div class="card" style="margin-bottom: 2em; position: relative">
-      <div
-        class="card"
-        style="
-          display: flex;
-          justify-content: flex-end;
-          align-items: center;
-          height: 100px;
-          padding: 0 2em 0 2em;
-          flex-direction: row;
-          border-radius: 1em 2em 0 0;
-          margin-top: 2em;
-        "
-      >
-        <img
-          :src="logo"
-          alt=""
-          width="200px"
-          height="200px"
-          style="position: absolute; top: -33%; right: 43%; border-radius: 100%; margin-right: 1em"
-        />
-      </div>
-      <div class="card">
-        <Menubar :model="items">
-          <template #item="{ item, props, hasSubmenu }">
-            <router-link v-if="item.route" v-slot="{ href, navigate }" :to="item.route" custom>
-              <a :href="href" v-bind="props.action" @click="navigate">
-                <span :class="item.icon" />
-                <span class="ml-2">{{ item.label }}</span>
-              </a>
-            </router-link>
-            <a v-else :href="item.url" :target="item.target" v-bind="props.action">
-              <span :class="item.icon" />
-              <span class="ml-2">{{ item.label }}</span>
-              <span v-if="hasSubmenu" class="pi pi-fw pi-angle-down ml-2" />
-            </a>
-          </template>
-        </Menubar>
-      </div>
-    </div>
+    <BreadCrumbs />
   </header>
 
   <main>
     <div
-      v-if="visible"
+      v-if="!isAuthenticated"
       style="
         display: flex;
         width: 100%;
-        height: 600px;
         justify-content: space-between;
         align-items: center;
         border: 1px solid #c0c0c0;
       "
     >
-    <img
-          :src="banner"
-          alt=""
-          width="50%"
-          height="100%"
-        />
-      <TabView  style="padding: 4em; width: 50%;">
-        <TabPanel  v-for="(view, index) of views" :key="index" :header="view">
+      <img :src="banner" alt="" width="50%" height="100%" />
+      <TabView style="padding: 4em; width: 50%">
+        <TabPanel v-for="(view, index) of views" :key="index" :header="view">
           <keep-alive>
             <component :is="view"></component>
           </keep-alive>
@@ -134,7 +83,7 @@ export default {
     </div>
 
     <div
-      v-if="isAuthenticated"
+      v-if="visible"
       style="
         display: flex;
         width: 100%;

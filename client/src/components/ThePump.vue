@@ -19,6 +19,7 @@ export default {
   data() {
     return {
       errors: [],
+      loading: true,
       defaultOption: 'Выберите период',
       deleteDialog: false,
       selected: {},
@@ -34,12 +35,11 @@ export default {
   computed: {
     ...mapState(useIndexStore, ['visible']),
     ...mapState(usePumpStore, ['pumps']),
-    ...mapState(useIndexStore, ['loading']),
     ...mapState(usePeriodStore, ['periods'])
   },
   async mounted() {
-    await this.getPumps();
-    await this.switchLoading();
+    await this.getPumps()
+    await this.switchLoading()
   },
   components: {
     DataTable,
@@ -57,7 +57,11 @@ export default {
     ...mapActions(useIndexStore, ['openDialog']),
     ...mapActions(usePumpStore, ['getPumps']),
     ...mapActions(usePeriodStore, ['getPeriods']),
-    ...mapActions(useIndexStore, ['switchLoading']),
+    switchLoading() {
+      setTimeout(() => {
+        this.loading = false
+      }, 1000)
+    },
     async createPump() {
       const pump = new FormData()
       pump.append('period_id', this.period.id)
@@ -71,14 +75,14 @@ export default {
       const request = await response.json()
 
       if (request.status == 'success') {
-        this.pumps.push(this.pump);
-        this.openDialog();
+        this.openDialog()
         this.$toast.add({
           severity: 'success',
           summary: 'Успешно',
           detail: request.response,
           life: 3000
-        });
+        })
+        this.getPumps()
       } else {
         this.errors = request.errors
         this.$toast.add({ severity: 'error', detail: 'Показания не сохранены', life: 3000 })
@@ -105,6 +109,7 @@ export default {
           detail: request.response,
           life: 3000
         })
+        this.getPumps()
       } else {
         this.errors = request.errors
         this.$toast.add({ severity: 'error', detail: 'Данные не обновлены', life: 3000 })
@@ -115,26 +120,22 @@ export default {
       this.deleteDialog = true
     },
     async deletePump(id) {
-      const response = await fetch(`http://localhost:8000/api/pump/${id}`, {
-        method: 'DELETE'
-      })
-
-      this.deleteDialog = false
-
-      const request = await response.json()
-      if (request.status == 'success') {
-        const index = this.pumps.indexOf(id)
-        this.pumps.splice(index, 1)
-        this.$toast.add({
-          severity: 'success',
-          summary: 'Успешно',
-          detail: request.response,
-          life: 3000
+      await this.axios.get('http://localhost:8000/sanctum/csrf-cookie')
+      await this.axios
+        .delete(`http://localhost:8000/api/pump/${id}`)
+        .then((response) => {
+          this.deleteDialog = false
+          this.$toast.add({
+            severity: 'success',
+            summary: 'Успешно',
+            detail: response.data.response,
+            life: 3000
+          })
+          this.getPumps()
         })
-      } else {
-        this.errors = request.errors
-        this.$toast.add({ severity: 'error', detail: 'Дачник не удалён', life: 3000 })
-      }
+        .catch(() => {
+          this.$toast.add({ severity: 'error', detail: 'Показания не удалены', life: 3000 })
+        })
     }
   }
 }
@@ -266,4 +267,3 @@ export default {
     </template>
   </DialogComponent>
 </template>
-@/stores/Store

@@ -4,10 +4,6 @@ import {
 } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 
-import pinia from "@/stores/store.js";
-import {
-  useUserStore
-} from '@/stores/UserStore'
 
 const router = createRouter({
   history: createWebHistory(
@@ -30,11 +26,19 @@ const router = createRouter({
     }
   ]
 })
-
-const userStore = useUserStore(pinia );
-const isAuthenticated = userStore.isAuthenticated;
 router.beforeEach((to, from, next) => {
-  if (to.name !== 'home' && !isAuthenticated) next({ name: 'home' })
+  function isAuthenticated() {
+    const status = JSON.parse(localStorage.getItem('isAuthenticated'));
+
+    if (status) {
+      return true;
+    } else {
+      return false
+    }
+  };
+  if (to.name == 'admin' && !isAuthenticated()) next({
+    name: 'home'
+  })
   else next()
 })
 

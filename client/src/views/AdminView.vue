@@ -1,37 +1,45 @@
 <script>
-import TheResidents from '@/components/TheResidents.vue';
-import TheBills from '@/components/TheBills.vue';
-import ThePeriods from '@/components/ThePeriods.vue';
-import ThePump from '@/components/ThePump.vue';
-import TheRate from '@/components/TheRate.vue';
-import TabView from 'primevue/tabview';
-import TabPanel from 'primevue/tabpanel';
-import Skeleton from 'primevue/skeleton';
-import Divider from 'primevue/divider';
-import Logo from '../assets/logo2.jpg';
-import ButtonComponent from 'primevue/button';
-import Menubar from 'primevue/menubar';
-import { RouterLink } from 'vue-router';
-
+import TheResidents from '@/components/TheResidents.vue'
+import TheBills from '@/components/TheBills.vue'
+import ThePeriods from '@/components/ThePeriods.vue'
+import ThePump from '@/components/ThePump.vue'
+import TheRate from '@/components/TheRate.vue'
+import TabView from 'primevue/tabview'
+import TabPanel from 'primevue/tabpanel'
+import Skeleton from 'primevue/skeleton'
+import Divider from 'primevue/divider'
+import Logo from '../assets/logo2.jpg'
+import ButtonComponent from 'primevue/button'
+import Breadcrumb from '@/components/BreadCrumbs.vue'
+import { RouterLink } from 'vue-router'
+import axios from 'axios'
+import BreadCrumbs from '@/components/BreadCrumbs.vue'
+axios.defaults.withCredentials = true
+axios.defaults.withXSRFToken = true
 
 export default {
   data() {
     return {
       logo: Logo,
-      items: [
-        {
-          label: 'Главная',
-          icon: 'pi pi-home',
-          route: '/'
-        },
-      ],
       view: 'Периоды',
-      views: ['Дачники', 'Периоды', 'Счётчик', 'Счета', 'Тарифы']
+      views: ['Дачники', 'Периоды', 'Счётчик', 'Счета', 'Тарифы'],
+    }
+  },
+  computed: {
+    user() {
+      return JSON.parse(localStorage.getItem('user'))
     }
   },
   methods: {
     switchingComponent(view) {
       this.view = view
+    },
+    async logout() {
+      await axios.post('http://localhost:8000/logout').then(() => {
+        localStorage.removeItem('user')
+        localStorage.setItem('isAuthenticated', false)
+        this.$router.push({ name: 'home' })
+      })
     }
   },
   components: {
@@ -45,39 +53,39 @@ export default {
     Skeleton,
     Divider,
     ButtonComponent,
-    Menubar,
-    RouterLink
+    Breadcrumb,
+    RouterLink,
+    BreadCrumbs
 }
 }
 </script>
 
 <template>
   <header>
-    <div class="card" style="margin-bottom: 2em; position: relative;">
+    <div class="card" style="margin-bottom: 2em; position: relative">
       <div
         class="card"
-        style="display: flex; justify-content: flex-end; align-items: center; height: 100px; padding: 0 2em 0 2em; flex-direction: row; border-radius: 1em;"
+        style="
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          height: 100px;
+          flex-direction: row;
+          border-radius: 1em;
+        "
       >
-        <img :src="logo" alt="" width="200px" height="200px"  style="position: absolute; top: -43%; right: 43%;  border-radius: 100%; margin-right: 1em;" />
+        <div class="card" style="display: flex; flex-direction: row; align-items: center">
+          <img :src="logo" alt="аватар" width="60px" height="60px" />
+          <div class="p-component" style="margin-left: 1em">
+            <h2>{{ user.user.name }}</h2>
+            <p>{{ user.user.email }}</p>
+          </div>
+        </div>
+
+        <ButtonComponent label="Выйти" rounded @click="logout()" />
       </div>
     </div>
-    <div class="card" style="margin-bottom: 2em;">
-        <Menubar :model="items">
-          <template #item="{ item, props, hasSubmenu }">
-                <router-link v-if="item.route" v-slot="{ href, navigate }" :to="item.route" custom>
-                    <a :href="href" v-bind="props.action" @click="navigate">
-                        <span :class="item.icon"></span>
-                        <span class="ml-2">{{ item.label }}</span>
-                    </a>
-                </router-link>
-                <a v-else  :href="item.url" :target="item.target" v-bind="props.action">
-                    <span :class="item.icon"></span>
-                    <span class="ml-2">{{ item.label }}</span>
-                    <span v-if="hasSubmenu" class="pi pi-fw pi-angle-down ml-2"> </span>
-                </a>
-            </template>
-        </Menubar>
-      </div>
+    <BreadCrumbs/>
   </header>
 
   <main>

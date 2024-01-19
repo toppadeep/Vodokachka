@@ -6,7 +6,6 @@ use App\Http\Controllers\ResidentController;
 use App\Http\Controllers\PeriodController;
 use App\Http\Controllers\BillController;
 use App\Http\Controllers\PumpMeterRecordsController;
-use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\RateController;
 /*
 |--------------------------------------------------------------------------

@@ -17,6 +17,7 @@ export default {
   data() {
     return {
       errors: [],
+      loading: true,
       deleteDialog: false,
       selected: {},
       period: {
@@ -29,8 +30,7 @@ export default {
   },
   computed: {
     ...mapState(useIndexStore, ['visible']),
-    ...mapState(usePeriodStore, ['periods']),
-    ...mapState(useIndexStore, ['loading'])
+    ...mapState(usePeriodStore, ['periods'])
   },
   async mounted() {
     await this.getPeriods()
@@ -50,7 +50,11 @@ export default {
   methods: {
     ...mapActions(useIndexStore, ['openDialog']),
     ...mapActions(usePeriodStore, ['getPeriods']),
-    ...mapActions(useIndexStore, ['switchLoading']),
+    switchLoading() {
+      setTimeout(() => {
+        this.loading = false
+      }, 1000)
+    },
     async createPeriod() {
       const period = new FormData()
       period.append('begin_date', this.period.begin_date)
@@ -63,7 +67,6 @@ export default {
 
       const request = await response.json()
       if (request.status == 'success') {
-        this.periods.push(this.period)
         this.openDialog()
         this.$toast.add({
           severity: 'success',
@@ -71,6 +74,7 @@ export default {
           detail: request.response,
           life: 3000
         })
+        this.getPeriods()
       } else {
         this.errors = request.errors
         this.$toast.add({ severity: 'error', detail: 'Дачник не добавлен', life: 3000 })
@@ -97,6 +101,7 @@ export default {
           detail: request.response,
           life: 3000
         })
+        this.getPeriods()
       } else {
         this.errors = request.errors
         this.$toast.add({ severity: 'error', detail: 'Период не обновлён', life: 3000 })
@@ -107,25 +112,22 @@ export default {
       this.deleteDialog = true
     },
     async deletePeriod(id) {
-      const response = await fetch(`http://localhost:8000/api/period/${id}`, {
-        method: 'DELETE'
-      })
-
-      this.deleteDialog = false
-
-      const request = await response.json()
-      if (request.status == 'success') {
-        const index = this.periods.indexOf(id)
-        this.periods.splice(index, 1)
-        this.$toast.add({
-          severity: 'success',
-          summary: 'Успешно',
-          detail: request.response,
-          life: 3000
+      await this.axios.get('http://localhost:8000/sanctum/csrf-cookie')
+      await this.axios
+        .delete(`http://localhost:8000/api/period/${id}`)
+        .then((response) => {
+          this.deleteDialog = false
+          this.$toast.add({
+            severity: 'success',
+            summary: 'Успешно',
+            detail: response.data.response,
+            life: 3000
+          })
+          this.getPeriods()
         })
-      } else {
-        this.$toast.add({ severity: 'error', detail: 'Данный период нельзя удалить', life: 3000 })
-      }
+        .catch(() => {
+          this.$toast.add({ severity: 'error', detail: 'Период не удалён', life: 3000 })
+        })
     }
   }
 }
@@ -294,4 +296,3 @@ export default {
     </template>
   </DialogComponent>
 </template>
-@/stores/Store

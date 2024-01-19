@@ -82,7 +82,7 @@ class BillController extends Controller
         if ($bill) {
             $validated = validator($request->all(), [
                 "period_id" => ['nullable', 'integer'],
-                "amount_rub" => ['nullable', 'numeric', 'min:1', 'max:100000'],
+                "amount_rub" => ['nullable', 'numeric', 'min:1', 'max:10000'],
             ]);
     
             if ($validated->fails()) {

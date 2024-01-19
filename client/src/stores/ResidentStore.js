@@ -1,12 +1,10 @@
-import {
-  defineStore
-} from 'pinia'
+import { defineStore } from 'pinia'
 
 export const useResidentStore = defineStore({
   id: 'resident',
   state: () => ({
     residents: [],
-    errors: [],
+    errors: []
   }),
   actions: {
     async getResidents() {
@@ -14,7 +12,7 @@ export const useResidentStore = defineStore({
         method: 'GET'
       })
       const request = await response.json()
-      this.residents = request.residents
-    },
-  },
+      this.residents = await request.residents
+    }
+  }
 })
