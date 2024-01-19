@@ -38,8 +38,8 @@ export default {
     ...mapState(usePeriodStore, ['periods'])
   },
   async mounted() {
-    await this.getRates();
-    await this.switchLoading();
+    await this.getRates()
+    await this.switchLoading()
   },
   components: {
     DataTable,
@@ -83,8 +83,8 @@ export default {
           summary: 'Успешно',
           detail: request.response,
           life: 3000
-        });
-        this.getRates();
+        })
+        this.getRates()
       } else {
         this.errors = request.errors
         this.$toast.add({ severity: 'error', detail: 'Дачник не добавлен', life: 3000 })
@@ -109,8 +109,8 @@ export default {
           summary: 'Успешно',
           detail: request.response,
           life: 3000
-        });
-        this.getRates();
+        })
+        this.getRates()
       } else {
         this.errors = request.errors
         this.$toast.add({ severity: 'error', detail: 'Данные не обновлены', life: 3000 })

@@ -42,8 +42,8 @@ export default {
             summary: 'Успешно',
             detail: 'Зарегистрирован',
             life: 3000
-          });
-          location.reload();
+          })
+          location.reload()
         })
         .catch((errors) => {
           this.$toast.add({

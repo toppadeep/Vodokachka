@@ -1,5 +1,4 @@
 import { defineStore } from 'pinia'
-
 export const usePumpStore = defineStore({
   id: 'pump',
   state: () => ({

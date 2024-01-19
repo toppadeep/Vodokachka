@@ -1,13 +1,13 @@
 /* color palette from <https://github.com/vuejs/theme> */
 :root {
-  --primary-color: #6750A4;
+  --primary-color: #6750a4;
   --onprimary-color: #ffffff;
-  --secondary-color: #625B71;
-  --primary-container-color: #EADDFF;
-  --primary-oncontainer-color: #21005D;
-  --secondary-container-color: #E8DEF8;
-  --secondary-oncontainer-color: #1D192B;
-  --outline-color: #CAC4D0;
+  --secondary-color: #625b71;
+  --primary-container-color: #eaddff;
+  --primary-oncontainer-color: #21005d;
+  --secondary-container-color: #e8def8;
+  --secondary-oncontainer-color: #1d192b;
+  --outline-color: #cac4d0;
 }
 
 /* semantic color variables for this project */
@@ -19,6 +19,6 @@
   --color-border: var(--outline-color);
   --color-border-hover: var(--vt-c-divider-light-1);
 
-  --color-heading: var( --primary-oncontainer-color);
+  --color-heading: var(--primary-oncontainer-color);
   --color-text: var(--secondary-oncontainer-color);
 }

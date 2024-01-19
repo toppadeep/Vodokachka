@@ -71,14 +71,14 @@ export default {
     <Validation :errors="errors" field="email" />
     <div style="display: flex; flex-direction: column">
       <label for="password">Пароль</label>
-      <Password
-        name="password"
-        toggleMask
-        :feedback="false"
-        v-model="user.password"
-      />  
+      <Password name="password" toggleMask :feedback="false" v-model="user.password" />
     </div>
     <Validation :errors="errors" field="password" />
-    <ButtonComponent type="submit" size="large" label="Войти" style="width: 100%; margin-top: 2em;" />
+    <ButtonComponent
+      type="submit"
+      size="large"
+      label="Войти"
+      style="width: 100%; margin-top: 2em"
+    />
   </form>
 </template>

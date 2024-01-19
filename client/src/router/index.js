@@ -1,14 +1,10 @@
-import {
-  createRouter,
-  createWebHistory
-} from 'vue-router'
+import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 
-
 const router = createRouter({
-  history: createWebHistory(
-    import.meta.env.BASE_URL),
-  routes: [{
+  history: createWebHistory(import.meta.env.BASE_URL),
+  routes: [
+    {
       path: '/',
       name: 'home',
       component: HomeView
@@ -28,19 +24,19 @@ const router = createRouter({
 })
 router.beforeEach((to, from, next) => {
   function isAuthenticated() {
-    const status = JSON.parse(localStorage.getItem('isAuthenticated'));
+    const status = JSON.parse(localStorage.getItem('isAuthenticated'))
 
     if (status) {
-      return true;
+      return true
     } else {
       return false
     }
-  };
-  if (to.name == 'admin' && !isAuthenticated()) next({
-    name: 'home'
-  })
+  }
+  if (to.name == 'admin' && !isAuthenticated())
+    next({
+      name: 'home'
+    })
   else next()
 })
-
 
 export default router

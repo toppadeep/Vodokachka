@@ -22,7 +22,7 @@ export default {
     return {
       logo: Logo,
       view: 'Периоды',
-      views: ['Дачники', 'Периоды', 'Счётчик', 'Счета', 'Тарифы'],
+      views: ['Дачники', 'Периоды', 'Счётчик', 'Счета', 'Тарифы']
     }
   },
   computed: {
@@ -56,7 +56,7 @@ export default {
     Breadcrumb,
     RouterLink,
     BreadCrumbs
-}
+  }
 }
 </script>
 
@@ -85,7 +85,7 @@ export default {
         <ButtonComponent label="Выйти" rounded @click="logout()" />
       </div>
     </div>
-    <BreadCrumbs/>
+    <BreadCrumbs />
   </header>
 
   <main>
