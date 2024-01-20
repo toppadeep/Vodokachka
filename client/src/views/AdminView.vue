@@ -62,7 +62,7 @@ export default {
 
 <template>
   <header>
-    <div class="card" style="margin-bottom: 2em; position: relative">
+    <div class="card" style="margin-bottom: 2em; position: relative; width: 100%">
       <div
         class="card"
         style="
@@ -81,11 +81,14 @@ export default {
             <p>{{ user.user.email }}</p>
           </div>
         </div>
-
-        <ButtonComponent label="Выйти" rounded @click="logout()" />
+        <div class="card">
+          <RouterLink to="/" style="margin-right: 1em">
+            <ButtonComponent label="Домой" text />
+          </RouterLink>
+          <ButtonComponent label="Выйти" rounded @click="logout()" />
+        </div>
       </div>
     </div>
-    <BreadCrumbs />
   </header>
 
   <main>
