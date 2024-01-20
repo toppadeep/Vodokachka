@@ -17,7 +17,7 @@ export default {
 </script>
 
 <template>
-  <div class="card flex justify-content-center" style="margin-bottom: 1em">
+  <div class="card flex justify-content-center" style="margin-bottom: 1em; background-color: aliceblue;">
     <Breadcrumb :home="home" :model="items">
       <template #item="{ item, props }">
         <router-link v-if="item.route" v-slot="{ href, navigate }" :to="item.route" custom>

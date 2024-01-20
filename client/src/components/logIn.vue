@@ -2,6 +2,7 @@
 import InputText from 'primevue/inputtext'
 import ButtonComponent from 'primevue/button'
 import Password from 'primevue/password'
+import Toast from 'primevue/toast'
 import Validation from '@/components/ErrorMessage.vue'
 
 export default {
@@ -18,7 +19,8 @@ export default {
     Validation,
     Password,
     InputText,
-    ButtonComponent
+    ButtonComponent,
+    Toast
   },
   methods: {
     async login({ ...user }) {
@@ -63,6 +65,7 @@ export default {
 </script>
 
 <template>
+  <Toast />
   <form @submit.prevent="login(user)" autocomplete="off">
     <div style="display: flex; flex-direction: column">
       <label for="email">Почта</label>

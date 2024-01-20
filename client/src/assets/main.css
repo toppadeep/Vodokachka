@@ -19,6 +19,16 @@
   font-weight: normal;
 }
 
+a {
+  text-decoration: none;
+  color: rgb(53, 53, 236);
+}
+
+a:hover {
+  text-decoration:solid;
+  color: rgb(26, 26, 187);
+}
+
 body {
   line-height: 1.6;
   font-family: Roboto, sans-serif;
@@ -80,6 +90,7 @@ main {
   color: red;
   border-radius: 5px;
   font-size: small;
+  margin-top: 0.5em;
   margin-bottom: 1em;
 }
 
