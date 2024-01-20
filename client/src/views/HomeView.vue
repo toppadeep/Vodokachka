@@ -25,6 +25,17 @@ export default {
     Menubar,
     BreadCrumbs,
     RouterLink
+  },
+  computed: {
+    isAuthenticated() {
+      const status = JSON.parse(localStorage.getItem('isAuthenticated'))
+
+      if (status) {
+        return true
+      } else {
+        return false
+      }
+    }
   }
 }
 </script>
@@ -37,10 +48,10 @@ export default {
     </div>
     <div class="card">
       <ul style="display: flex; flex-direction: row">
-        <RouterLink to="admin" style="margin-left: 1em">
+        <RouterLink v-if="isAuthenticated" to="admin" style="margin-left: 1em">
           <ButtonComponent label="Панель управления" rounded />
         </RouterLink>
-        <RouterLink to="login" style="margin-left: 1em">
+        <RouterLink v-else to="login" style="margin-left: 1em">
           <ButtonComponent label="Войти" rounded />
         </RouterLink>
       </ul>
